@@ -2,44 +2,45 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>fr.wdes</groupId>
   <artifactId>wdes-launcher</artifactId>
-  <version>1.0.1</version>
+  <version>2.0.0</version>
 
 <dependencies>
+
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.1</version>
     </dependency>
+    
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.0</version>
     </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.2.4</version>
-    </dependency>
+    
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>
       <artifactId>jopt-simple</artifactId>
       <version>4.5</version>
     </dependency>
+    
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>2.2.4</version>
     </dependency>
+    
     <dependency>
 	<groupId>com.google.guava</groupId>
 	<artifactId>guava</artifactId>
 	<version>r05</version>
 	</dependency>
+	
 	<dependency>
 	<groupId>commons-codec</groupId>
 	<artifactId>commons-codec</artifactId>
 	<version>1.10</version>
-</dependency>
+	</dependency>
 	
   </dependencies>
 
@@ -60,7 +61,7 @@
               </descriptorRefs>
               <archive>
                 <manifest>
-                  <mainClass>fr.wdes.launchers.Wdes</mainClass>
+                  <mainClass>fr.wdes.launcher.Wdes</mainClass>
                 </manifest>
                 <addMavenDescriptor>false</addMavenDescriptor>
               </archive>
@@ -72,6 +73,6 @@
   </build>
   <organization>
   	<name>WdesLaunchers</name>
-  	<url>https://launcher.wdes.fr</url>
+  	<url>https://wdeslaunchers.wdes.fr</url>
   </organization>
 </project>
