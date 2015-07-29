@@ -18,6 +18,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import fr.wdes.Launcher;
 import fr.wdes.profile.LauncherVisibilityRule;
 import fr.wdes.profile.Profile;
 
@@ -147,6 +148,7 @@ public class ProfileInfoPanel extends JPanel {
         resolutionPanel.add(resolutionHeight);
 
         add(resolutionCustom, constraints);
+        resolutionCustom.setEnabled(false);
         constraints.fill = 2;
         constraints.weightx = 1.0D;
         add(resolutionPanel, constraints);
@@ -187,8 +189,8 @@ public class ProfileInfoPanel extends JPanel {
         resolutionCustom.setSelected(resolution != null);
         if(resolution == null)
             resolution = Profile.DEFAULT_RESOLUTION;
-        resolutionWidth.setText(String.valueOf(resolution.getWidth()));
-        resolutionHeight.setText(String.valueOf(resolution.getHeight()));
+        resolutionWidth.setText(String.valueOf(Launcher.getInstance().width));
+        resolutionHeight.setText(String.valueOf(Launcher.getInstance().height));
         updateResolutionState();
 
 
@@ -263,8 +265,8 @@ public class ProfileInfoPanel extends JPanel {
 
     private void updateResolutionState() {
         if(resolutionCustom.isSelected()) {
-            resolutionWidth.setEnabled(true);
-            resolutionHeight.setEnabled(true);
+            resolutionWidth.setEnabled(false);
+            resolutionHeight.setEnabled(false);
             updateResolution();
         }
         else {
