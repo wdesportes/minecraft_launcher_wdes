@@ -13,5 +13,7 @@ public class JObjectContainer {
 	protected String URL_STATUS_CHECKER;
 	protected boolean OFFLINE_MODE;
 	protected boolean status;
+	protected String width;
+	protected String height;
 	public JObjectContainer() { }
 }
