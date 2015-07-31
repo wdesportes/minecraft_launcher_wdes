@@ -11,12 +11,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +43,7 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import fr.wdes.Http;
 import fr.wdes.Launcher;
 import fr.wdes.LauncherConstants;
 import fr.wdes.logger;
@@ -74,7 +80,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
     private final CardLayout cardLayout;
     private final LauncherTabPanel tabPanel;
     //private final BottomBarPanel bottomBar;
-    private final LiteProgressBar progressBar = new LiteProgressBar();
+    public LiteProgressBar progressBar = new LiteProgressBar();
     public BackgroundImage launcherhome;
     private final Launcher launcher;
     private boolean console;
@@ -125,7 +131,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	List<JBouton> JBoutons = new ArrayList<JBouton>();
     private BackgroundImage CreateHome()
     {
-	       InputStream is = LauncherPanel.class.getResourceAsStream("/fr/wdes/ressources/minecraft.ttf");
+	       InputStream is = Launcher.class.getResourceAsStream("/fr/wdes/ressources/minecraft.ttf");
 			Font minecraft = null;
 			try {
 				minecraft = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(Font.PLAIN, 12f);
@@ -292,8 +298,17 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
  			bottomRectangle.setBackground(new Color(30, 30, 30, 180));
  			bottomRectangle.setOpaque(true);
   	        logo.setBounds(FRAME_WIDTH / 2 - 200, 35, 400, 109);
-  	        setIcon(logo, "logo.png", logo.getWidth(), logo.getHeight());
+  	        
+
+		
+			
+  	        try {
+				setIcon(logo,getLogo(Launcher.getInstance().uuid), logo.getWidth(), logo.getHeight());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
   	       
+  	      
   	        launcherhome.add(logo);
   	        launcherhome.add(logininput);
   	        launcherhome.add(passwordinput);
@@ -327,6 +342,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 			e.printStackTrace();
 		}
 	}
+	@SuppressWarnings("unused")
 	private void setIcon(JLabel label, String iconName, int w, int h) {
 		try {
 			label.setIcon(new ImageIcon(ImageUtils.scaleImage(ImageIO.read(ResourceUtils.getResourceAsStream("/fr/wdes/ressources/" + iconName)), w, h)));
@@ -334,9 +350,20 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 			e.printStackTrace();
 		}
 	}
+	private void setIcon(JLabel label, BufferedImage iconName, int w, int h) {
+		label.setIcon(new ImageIcon(ImageUtils.scaleImage(iconName, w, h)));
+	}
+
 	private static BufferedImage getDefaultImage() {
 		try {
 			return ImageIO.read(Launcher.class.getResourceAsStream("/fr/wdes/ressources/face.png"));
+		} catch (IOException e) {
+			throw new RuntimeException("Erreur de lecture de l'image par défault");
+		}
+	}
+	private static BufferedImage getDefaultLogo() {
+		try {
+			return ImageIO.read(Launcher.class.getResourceAsStream("/fr/wdes/ressources/logo.png"));
 		} catch (IOException e) {
 			throw new RuntimeException("Erreur de lecture de l'image par défault");
 		}
@@ -362,28 +389,93 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 			}
 		}
 	}
+
+	public byte[] BufferedImageToByteArray(BufferedImage orImage){
+		  try{
+		   
+		  ByteArrayOutputStream baos=new ByteArrayOutputStream();
+		  
+		  ImageIO.write(orImage, "png", baos );
+		  
+		  byte[] imageBytes=baos.toByteArray();
+		  //do something with the byte array
+		  return imageBytes;
+		  }catch(IOException ie){}
+		return null;
+		 }
 	private CallbackTask getImage(final String user) {
 		return new CallbackTask(new Callable<BufferedImage>() {
 			public BufferedImage call() throws Exception {
-				
+				URL url = new URL("https://minotar.net/helm/" + user + "/100");  
+				byte[] AVATAR = null;
+				BufferedImage image = null;
 			
-					System.out.println("Attempting to grab avatar helm for " + user + "...");
-					URL url = new URL("https://minotar.net/helm/" + user + "/100");   
-				    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();   
-				    try 
-				    {     
-				        InputStream stream = new BufferedInputStream(urlConnection.getInputStream());     
-				      BufferedImage image = ImageIO.read(stream);
-						if (image == null) {
-							throw new NullPointerException("No avatar helm downloaded!");
-						}
-						System.out.println("Avatar Téléchargé !!");
-						return image;
-				    }
-				    finally 
-				    {     
-				        urlConnection.disconnect();   
-				    } 
+
+        try {
+			Statement s = Launcher.getInstance().db.createStatement();
+			ResultSet r = s.executeQuery("SELECT COUNT(ID) AS rowcount FROM Users WHERE USERNAME='"+user+"'");
+			r.next();
+			int count = r.getInt("rowcount") ;
+			r.close() ;
+			
+			System.out.println("[Avatar] WdesLaunchers has " + count + " row(s).");
+			
+           
+                HttpURLConnection connection = null;
+             if(count == 0){
+            	 connection = (HttpURLConnection) url.openConnection();	
+             }
+             else{
+            	 String query = "SELECT * FROM Users WHERE USERNAME='"+user+"'";
+                 Statement statement = Launcher.getInstance().db.createStatement();
+                 ResultSet rslt=statement.executeQuery(query);  
+                 logger.info("Récupération de ta tète de : " + user + "...");
+                     rslt.next(); 
+                     String  ETAG = rslt.getString("ETAG");
+                     AVATAR=rslt.getBytes("AVATAR"); 
+            	connection = Http.performHead(url, Launcher.getInstance().getProxy(),"If-None-Match", ETAG);
+             }
+
+        	if(connection.getResponseCode() == 304 && count == 1){
+        		logger.info("Avatar Téléchargé depuis la base de données etag : "+connection.getHeaderField("Etag")+"!!");
+        		InputStream in = new ByteArrayInputStream(AVATAR);
+        		image = ImageIO.read(in);
+                // byte[] imgArr=rslt.getBytes("image");  
+                // image=Toolkit.getDefaultToolkit().createImage(imgArr);
+        	}
+        	else if(connection.getResponseCode() == 200){
+        		logger.info("Avatar Téléchargé !!");
+        		InputStream stream = new BufferedInputStream(connection.getInputStream());     
+			      image = ImageIO.read(stream);
+					if (image == null) {
+						throw new NullPointerException("No avatar helm downloaded!");
+					}
+					
+					String sql = "INSERT INTO Users (ID,USERNAME,ETAG,AVATAR) " +"VALUES (NULL,'" + user + "', '"+connection.getHeaderField("Etag")+"', ? );";
+					PreparedStatement statement = Launcher.getInstance().db.prepareStatement(sql);
+					statement.setBytes(1, BufferedImageToByteArray(image));
+					statement.executeUpdate();
+					statement.close();
+	
+
+					
+
+			              
+			      
+					logger.info("Avatar Téléchargé !!");
+				
+					
+ 
+
+            }
+        	connection.disconnect();
+        	return image;
+        	
+        }
+        finally {
+
+        }
+        
 
 					
 					
@@ -392,6 +484,77 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 			}
 		});
 	}
+	private BufferedImage getLogo(final String uuid) throws Exception {
+		
+				URL url = new URL("http://download.wdeslaunchers.wdes.fr/logos/" + uuid + ".png");  
+				byte[] LOGO = null;
+				BufferedImage image = null;
+			
+
+        
+			Statement s = Launcher.getInstance().db.createStatement();
+			ResultSet r = s.executeQuery("SELECT COUNT(ID) AS rowcount FROM Launchers WHERE UUID='"+uuid+"'");
+			r.next();
+			int count = r.getInt("rowcount") ;
+			r.close() ;
+			
+			logger.info("[Logo] WdesLaunchers has " + count + " row(s).");
+			
+           
+                HttpURLConnection connection = null;
+             if(count == 0){
+            	 connection = (HttpURLConnection) url.openConnection();	
+             }
+             else{
+            	 String query = "SELECT * FROM Launchers WHERE UUID='"+uuid+"'";
+                 Statement statement = Launcher.getInstance().db.createStatement();
+                 ResultSet rslt=statement.executeQuery(query);  
+                 logger.info("[Logo] Récupération du logo du serveur : " + uuid + "...");
+                     rslt.next(); 
+                     String  DATE = rslt.getString("DATE");
+                     LOGO=rslt.getBytes("LOGO"); 
+            	connection = Http.performHead(url, Launcher.getInstance().getProxy(),"If-Modified-Since", DATE);
+             }
+        	if(connection.getResponseCode() == 304 && count == 1){
+        		logger.info("[Logo] Téléchargé depuis la base de données !!");
+        		InputStream in = new ByteArrayInputStream(LOGO);
+        		image = ImageIO.read(in);
+        	}
+        	else if(connection.getResponseCode() == 200){
+        		connection = (HttpURLConnection) url.openConnection();
+        		InputStream stream = new BufferedInputStream(connection.getInputStream());     
+			      image = ImageIO.read(stream);
+					if (image == null) {
+						logger.info("[Logo] Aucun logo n'a pu être téléchargé, le logo par défault serra utilisé !!");
+						return getDefaultLogo();
+					}
+					
+					if(count == 1){
+						String sql = "DELETE FROM Launchers WHERE UUID='" + uuid + "';";
+						PreparedStatement statement = Launcher.getInstance().db.prepareStatement(sql);
+						statement.executeUpdate();
+						statement.close();
+						logger.info("Logo Effacé !!");
+					}
+					
+					String sql = "INSERT INTO Launchers (ID,UUID,DATE,LOGO) VALUES (NULL,'" + uuid + "', '"+connection.getHeaderField("Last-Modified")+"', ? );";
+					
+					PreparedStatement statement = Launcher.getInstance().db.prepareStatement(sql);
+					statement.setBytes(1, BufferedImageToByteArray(image));
+					statement.executeUpdate();
+					statement.close();
+					logger.info("Logo Téléchargé !!");
+
+            }
+        	connection.disconnect();
+        	return image;
+        	
+
+
+	
+			}
+	
+	
     public LauncherPanel(final Launcher launcher) {
         this.launcher = launcher;
         cardLayout = new CardLayout();
@@ -607,8 +770,8 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
             //this.logoutbtn.setVisible(false);
             this.gamebtn.setVisible(false);
             this.loginbtn.setVisible(true);
-            this.progressBar.setIndeterminate(true);
             this.progressBar.setVisible(true);
+            this.progressBar.setValue(100);
             this.progressBar.setString("En attente de votre connexion");
             
         }
@@ -631,7 +794,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 
 				// Start callable
 				FutureTask<BufferedImage> futureImage = new FutureTask<BufferedImage>(callback);
-				Thread downloadThread = new Thread(futureImage, "Image download thread");
+				Thread downloadThread = new Thread(futureImage, "Avatar");
 				downloadThread.setDaemon(true);
 				downloadThread.start();
 
