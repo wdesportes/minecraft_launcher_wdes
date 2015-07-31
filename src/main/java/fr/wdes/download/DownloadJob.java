@@ -39,7 +39,7 @@ public class DownloadJob {
 
     public void addDownloadables(final Collection<Downloadable> downloadables) {
         if(started)
-            throw new IllegalStateException("Cannot add to download job that has already started");
+            throw new IllegalStateException("Ajout impossible,tâche déja commencée !!");
 
         allFiles.addAll(downloadables);
         remainingFiles.addAll(downloadables);
@@ -56,7 +56,7 @@ public class DownloadJob {
 
     public void addDownloadables(final Downloadable[] downloadables) {
         if(started)
-            throw new IllegalStateException("Cannot add to download job that has already started");
+            throw new IllegalStateException("Ajout impossible,tâche déja commencée !!");
 
         for(final Downloadable downloadable : downloadables) {
             allFiles.add(downloadable);
@@ -114,8 +114,8 @@ public class DownloadJob {
             if(downloadable.getNumAttempts() > 5) {
                 if(!ignoreFailures)
                     failures.add(downloadable);
-                logger.warn("Gave up trying to download " + downloadable.getUrl() + " for job '" + name + "'");
-            
+                logger.warn("Abandon : " + downloadable.getUrl() + " Tâche :'" + name + "'");
+                
             }
             else
                 try {
@@ -141,18 +141,18 @@ public class DownloadJob {
 
     public void startDownloading(final ThreadPoolExecutor executorService) {
         if(started)
-            throw new IllegalStateException("Cannot start download job that has already started");
+            throw new IllegalStateException("Tâche déja démarrée !!");
         started = true;
 
         if(allFiles.isEmpty()) {
-        	logger.info("Download job '" + name + "' skipped as there are no files to download");
+        	logger.info("Tâche : '" + name + "' ignorée RAS.");
             listener.onDownloadJobFinished(this);
         }
         else {
             final int threads = executorService.getMaximumPoolSize();
             remainingThreads.set(threads);
             
-            logger.info("Download job '" + name + "' started (" + threads + " threads, " + allFiles.size() + " files)");
+            logger.info("Tâche : '" + name + "' démarrée (" + threads + " threads, " + allFiles.size() + " fichiers)");
             for(int i = 0; i < threads; i++)
                 executorService.submit(new Runnable() {
                     public void run() {
