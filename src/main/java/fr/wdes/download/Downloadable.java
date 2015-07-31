@@ -14,6 +14,10 @@ import java.net.URL;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import fr.wdes.LauncherConstants;
 import fr.wdes.logger;
@@ -186,25 +190,28 @@ public class Downloadable {
     	    return String.format("%1$0" + hashLength + "x", new Object[] { new BigInteger(1, digest.digest()) });
     	  }
     public String download() throws IOException {
-        String localMd5 = null;
+    	String localMd5 = null;
+    	String localDate = null;
         numAttempts += 1;
 
         if(target.getParentFile() != null && !target.getParentFile().isDirectory())
             target.getParentFile().mkdirs();
-        if(!forceDownload && target.isFile())
-            localMd5 = getMD5(target);
+        if(!forceDownload && target.isFile()){
+            //localMd5 = getMD5(target);
+            localDate = getGMT(target.lastModified());
+        }
         name = target.getName();
         if(target.isFile() && !target.canWrite())
             throw new RuntimeException("Do not have write permissions for " + target + " - aborting!");
         try {
-            final HttpURLConnection connection = makeConnection(localMd5);
+            final HttpURLConnection connection = makeConnection(localMd5,localDate);
             final int status = connection.getResponseCode();
-
+            //Etag ou
             if(status == 304)
-                return "Used own copy as it matched etag";
+                return "[304] Fichiers identiques,vérification par Last-Modified";
             if(status == 505)
-                return "Fichier indisponible";
-            if(status / 100 == 2) {
+                return "[505]Fichier indisponible";
+            if(status == 200) {
                 if(expectedSize == 0L)
                     monitor.setTotal(connection.getContentLength());
                 else
@@ -216,18 +223,18 @@ public class Downloadable {
                 final String etag = getEtag(connection);
 
                 if(etag.contains("-"))
-                    return "Didn't have etag so assuming our copy is good";
+                    return "[200] Fichier téléchargé,pas d'Etag";
                 if(etag.equalsIgnoreCase(md5))
-                    return "Downloaded successfully and etag matched";
+                    return "[200] Fichier téléchargé,vérifié par Etag";
                 throw new RuntimeException(String.format("E-tag did not match downloaded MD5 (ETag was %s, downloaded %s)", new Object[] { etag, md5 }));
             }
             if(target.isFile())
-                return "Couldn't connect to server (responded with " + status + ") but have local file, assuming it's good";
-            throw new RuntimeException("Server responded with " + status);
+                return "[" + status + "] Serveur innacessible,fichier local disponible,non vérifié";
+            throw new RuntimeException("Status du serveur : " + status);
         }
         catch(final IOException e) {
             if(target.isFile())
-                return "Couldn't connect to server (" + e.getClass().getSimpleName() + ": '" + e.getMessage() + "') but have local file, assuming it's good";
+                return "Impossible de se connecter au serveur (" + e.getClass().getSimpleName() + ": '" + e.getMessage() + "') ,fichier local disponible,non vérifié";
             throw e;
         }
         catch(final NoSuchAlgorithmException e) {
@@ -235,7 +242,14 @@ public class Downloadable {
         }
     }
 
-    public long getExpectedSize() {
+    private String getGMT(long lastModified) {
+    	DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z", Locale.US);
+    	dateFormat.setTimeZone(TimeZone.getTimeZone("GMT")); 
+    	String GMT = dateFormat.format(lastModified);
+		return GMT;
+	}
+
+	public long getExpectedSize() {
         return expectedSize;
     }
     
@@ -262,6 +276,24 @@ public class Downloadable {
         return url;
     }
 
+    protected HttpURLConnection makeConnection(final String localMd5,final String localDate) throws IOException {
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection(proxy);
+        connection.setRequestProperty("User-Agent", LauncherConstants.USER_AGENT);
+        connection.setUseCaches(false);
+        connection.setDefaultUseCaches(false);
+        connection.setRequestProperty("Cache-Control", "no-store,max-age=0,no-cache");
+        connection.setRequestProperty("Expires", "0");
+        connection.setRequestProperty("Pragma", "no-cache");
+        if(localMd5 != null)
+            connection.setRequestProperty("If-None-Match", localMd5);
+        if(localDate != null)
+            connection.setRequestProperty("If-Modified-Since", localDate);
+        
+
+        connection.connect();
+
+        return connection;
+    }
     protected HttpURLConnection makeConnection(final String localMd5) throws IOException {
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection(proxy);
         connection.setRequestProperty("User-Agent", LauncherConstants.USER_AGENT);
@@ -272,12 +304,12 @@ public class Downloadable {
         connection.setRequestProperty("Pragma", "no-cache");
         if(localMd5 != null)
             connection.setRequestProperty("If-None-Match", localMd5);
+        
 
         connection.connect();
 
         return connection;
     }
-
     public void setExpectedSize(final long expectedSize) {
         this.expectedSize = expectedSize;
     }
