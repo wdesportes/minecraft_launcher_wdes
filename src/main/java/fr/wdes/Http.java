@@ -63,6 +63,17 @@ public class Http {
             IOUtils.closeQuietly(inputStream);
         }
     }
+    public static HttpURLConnection performHead(final URL url, final Proxy proxy,final String name,final String value) throws IOException {
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection(proxy);
+        
+        connection.setRequestMethod("HEAD");
+        connection.setRequestProperty(name, value);
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(60000);
+        connection.setRequestProperty("User-Agent", LauncherConstants.USER_AGENT);
+        //System.out.println(connection.getHeaderFields());
+        return connection;
+    }
 
     public static String performPost(final URL url, final Map<String, Object> query, final Proxy proxy) throws IOException {
         return Util.performPost(url, buildQuery(query), proxy, "application/x-www-form-urlencoded", false);
