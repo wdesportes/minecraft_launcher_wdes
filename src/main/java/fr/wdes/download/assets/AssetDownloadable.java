@@ -65,9 +65,9 @@ public class AssetDownloadable
     if (localAsset.isFile())
     {
       if (FileUtils.sizeOf(localAsset) == this.asset.getSize()) {
-        return "Have local file and it's the same size; assuming it's okay!";
+        return "Fichier local,tailles identiques !!";
       }
-      logger.info("Had local file but it was the wrong size... had {} but expected {}"+ new Object[] { Long.valueOf(FileUtils.sizeOf(localAsset)), Long.valueOf(this.asset.getSize()) });
+      logger.info("Fichier local,mauvaise taille, {} devait être {}"+ new Object[] { Long.valueOf(FileUtils.sizeOf(localAsset)), Long.valueOf(this.asset.getSize()) });
       FileUtils.deleteQuietly(localAsset);
       this.status = Status.DOWNLOADING;
     }
@@ -77,7 +77,7 @@ public class AssetDownloadable
       if (localCompressedHash.equalsIgnoreCase(this.asset.getCompressedHash())) {
         return decompressAsset(localAsset, localCompressed);
       }
-      logger.info("Had local compressed but it was the wrong hash... expected {} but had {}"+ new Object[] { this.asset.getCompressedHash(), localCompressedHash });
+      logger.info("Fichier local,mauvaise signature, {} devait être {}"+ new Object[] { this.asset.getCompressedHash(), localCompressedHash });
       FileUtils.deleteQuietly(localCompressed);
     }
     if ((remoteCompressed != null) && (localCompressed != null))
@@ -98,7 +98,7 @@ public class AssetDownloadable
         FileUtils.deleteQuietly(localCompressed);
         throw new RuntimeException(String.format("Hash did not match downloaded compressed asset (Expected %s, downloaded %s)", new Object[] { this.asset.getCompressedHash(), hash }));
       }
-      throw new RuntimeException("Server responded with " + status);
+      throw new RuntimeException("Status du serveur : " + status);
     }
     Launcher.getInstance().getLauncherPanel().getProgressBar().setString("Téléchargement de : "+this.destination.getName());
     HttpURLConnection connection = makeConnection(remoteAsset.toString());
@@ -111,12 +111,12 @@ public class AssetDownloadable
       FileOutputStream outputStream = new FileOutputStream(localAsset);
       String hash = copyAndDigest(inputStream, outputStream, "SHA", 40);
       if (hash.equalsIgnoreCase(this.asset.getHash())) {
-        return "Downloaded asset and hash matched successfully";
+        return "[200] Fichier téléchargé,vérifié par signature";
       }
       FileUtils.deleteQuietly(localAsset);
       throw new RuntimeException(String.format("Hash did not match downloaded asset (Expected %s, downloaded %s)", new Object[] { this.asset.getHash(), hash }));
     }
-    throw new RuntimeException("Server responded with " + status);
+    throw new RuntimeException("Status du serveur : " + status);
   }
   
   public String getStatus()
@@ -142,15 +142,15 @@ public class AssetDownloadable
     }
     this.status = Status.DOWNLOADING;
     if (hash.equalsIgnoreCase(this.asset.getHash())) {
-      return "Had local compressed asset, unpacked successfully and hash matched";
+      return "Fichier local compressé,décompression,vérifié par Etag";
     }
     FileUtils.deleteQuietly(localAsset);
-    throw new RuntimeException("Had local compressed asset but unpacked hash did not match (expected " + this.asset.getHash() + " but had " + hash + ")");
+    throw new RuntimeException("Fichier local compressé,décompression,signatures différentes  " + this.asset.getHash() + " a la place de : " + hash + "");
   }
   
   private static enum Status
   {
-    DOWNLOADING("Downloading"),  EXTRACTING("Extracting");
+    DOWNLOADING("Téléchargement"),  EXTRACTING("Extraction");
     
     private final String name;
     
