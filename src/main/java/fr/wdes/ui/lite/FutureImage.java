@@ -55,7 +55,6 @@ public class FutureImage extends Image implements ImageCallback {
 	public void setRepaintCallback(JComponent comp) {
 		this.repaintCallback = comp;
 	}
-
 	public void done(BufferedImage done) {
 		this.futureImage = done;
 		SwingUtilities.invokeLater(new Runnable() {
