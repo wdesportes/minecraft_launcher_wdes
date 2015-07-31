@@ -9,8 +9,8 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 import fr.wdes.Launcher;
-import fr.wdes.OperatingSystem;
 import fr.wdes.logger;
+import fr.wdes.ui.lite.Compatibility;
 
 @SuppressWarnings("serial")
 public class WebsiteTab extends JScrollPane {
@@ -29,7 +29,7 @@ public class WebsiteTab extends JScrollPane {
             public void hyperlinkUpdate(final HyperlinkEvent he) {
                 if(he.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
                     try {
-                        OperatingSystem.openLink(he.getURL().toURI());
+                        Compatibility.browse(he.getURL().toURI());
                     }
                     catch(final Exception e) {
                     	logger.warn("Unexpected exception opening link " + he.getURL(), e);
