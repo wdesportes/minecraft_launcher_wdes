@@ -42,6 +42,7 @@ import fr.wdes.process.JavaProcessLauncher;
 import fr.wdes.process.JavaProcessRunnable;
 import fr.wdes.profile.LauncherVisibilityRule;
 import fr.wdes.profile.Profile;
+import fr.wdes.ui.lite.Compatibility;
 import fr.wdes.updater.DateTypeAdapter;
 import fr.wdes.updater.LocalVersionList;
 import fr.wdes.updater.VersionList;
@@ -60,7 +61,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
     private LauncherVisibilityRule visibilityRule;
     private boolean isWorking;
     private File nativeDir;
-    //private static final String CRASH_IDENTIFIER_MAGIC = "#@!@#";
+    private static final String CRASH_IDENTIFIER_MAGIC = "#@!@#";
     protected final Gson gson = new Gson();
     private final DateTypeAdapter dateAdapter = new DateTypeAdapter();
     public GameLauncher(final Launcher launcher) {
@@ -223,21 +224,22 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
         	logger.warn("Aborting launch; version is null?");
             return;
         }
-
+        launcher.getLauncherPanel().progressBar.setText("Décompression des natives ...");
         nativeDir = new File(launcher.getWorkingDirectory(), "versions/" + version.getId() + "/" + version.getId() + "-natives-" + System.nanoTime());
         if(!nativeDir.isDirectory())
             nativeDir.mkdirs();
-        logger.info("Unpacking natives to " + nativeDir);
+        logger.info("Décompression des natives : " + nativeDir);
         try {
             unpackNatives(version, nativeDir);
         }
         catch(final IOException e) {
-            logger.warn("Couldn't unpack natives!", e);
+        	launcher.getLauncherPanel().progressBar.setText("Echec de décompression des natives.");
+            logger.warn("Echec de décompression des natives.", e);
             return;
         }
 
         final File gameDirectory = selectedProfile.getGameDir() == null ? launcher.getWorkingDirectory() : selectedProfile.getGameDir();
-        logger.info("Launching in " + gameDirectory);
+        logger.info("Démarrage dans : " + gameDirectory);
 
         if(!gameDirectory.exists()) {
             if(!gameDirectory.mkdirs())
@@ -254,22 +256,24 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
         File assetsDir;
         try
         {
+          launcher.getLauncherPanel().progressBar.setText("Reconstruction des assets ...");
           assetsDir = reconstructAssets();
         }
         catch (IOException e)
         {
-        	logger.warn("Couldn't unpack natives!", e);
+        	logger.warn("Impossible de reconstruire les assets !", e);
           return;
         }
 
         final OperatingSystem os = OperatingSystem.getCurrentPlatform();
-        if(os.equals(OperatingSystem.OSX))
+        if(os.equals(OperatingSystem.OSX)){
 			try {
 				processLauncher.addCommands(new String[] { "-Xdock:icon=" + getAssetObject("icons/minecraft.icns").getAbsolutePath(), "-Xdock:name=" + LauncherConstants.SERVER_NAME });
 			} catch (IOException e1) {e1.printStackTrace();}
-		else if(os.equals(OperatingSystem.WINDOWS))
+        }
+		else if(os.equals(OperatingSystem.WINDOWS)){
             processLauncher.addCommands(new String[] { "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump" });
-
+		}
         final String profileArgs = selectedProfile.getJavaArgs();
 
         if(profileArgs != null)
@@ -310,8 +314,8 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
             processLauncher.addCommands(new String[] { "--demo" });
 
         if(selectedProfile.getResolution() != null) {
-            processLauncher.addCommands(new String[] { "--width", String.valueOf(selectedProfile.getResolution().getWidth()) });
-            processLauncher.addCommands(new String[] { "--height", String.valueOf(selectedProfile.getResolution().getHeight()) });
+            processLauncher.addCommands(new String[] { "--width", String.valueOf(Launcher.getInstance().config.width) });
+            processLauncher.addCommands(new String[] { "--height", String.valueOf(Launcher.getInstance().config.height) });
         }
         try {
             final List<String> parts = processLauncher.getFullCommands();
@@ -332,8 +336,8 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
         	
         	
         	
-            logger.info("Running " + full.toString());
-            
+            logger.info("Démarré " + full.toString());
+            launcher.getLauncherPanel().progressBar.setText("Processus démarré !!");
             final JavaProcess process = processLauncher.start();
             process.safeSetExitRunnable(this);
 
@@ -341,63 +345,61 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                 launcher.getFrame().setVisible(false);
         }
         catch(final IOException e) {
-        	logger.warn("Couldn't launch game", e);
+        	logger.warn("Impossible de lancer le jeu.", e);
+        	launcher.getLauncherPanel().progressBar.setText("Impossible de lancer le jeu.");
             setWorking(false);
             return;
         }
     }
 
     public void onDownloadJobFinished(final DownloadJob job) {
-        updateProgressBar();
+
         synchronized(lock) {
             if(job.getFailures() > 0) {
-            	logger.info("Job '" + job.getName() + "' finished with " + job.getFailures() + " failure(s)!");
+            	launcher.getLauncherPanel().progressBar.setText("[FAIL] Tâche '" + job.getName() + "' terminée," + job.getFailures() + " echec(s)!");
+            	logger.warn("[FAIL] Tâche '" + job.getName() + "' terminée avec : " + job.getFailures() + " echec(s)!");
                 setWorking(false);
             }
             else {
-            	logger.info("Job '" + job.getName() + "' finished successfully");
-
-                if(isWorking() && !hasRemainingJobs())
-                    try {
-                        launchGame();
-                    }
-                    catch(final Throwable ex) {
-                    	logger.warn("Fatal error launching game. Report this to http://mojang.atlassian.net please!", ex);
-                    }
+            	launcher.getLauncherPanel().progressBar.setText("[OK] Tâche '" + job.getName() + "' terminée.");
+            	logger.info("[OK] Tâche '" + job.getName() + "' terminée.");
             }
         }
     }
 
     public void onDownloadJobProgressChanged(final DownloadJob job) {
-        updateProgressBar();
+    	launcher.getLauncherPanel().progressBar.setText("Tâche : "+job.getName()+" en cours ...");
     }
 
     public void onJavaProcessEnded(final JavaProcess process) {
         final int exitCode = process.getExitCode();
 
         if(exitCode == 0) {
-        	logger.info("Game ended with no troubles detected (exit code " + exitCode + ")");
+        	launcher.getLauncherPanel().progressBar.setText("[" + exitCode + "] Arrêt du jeu,aucun problème détécté.");
+        	logger.info("[" + exitCode + "]Arrêt du jeu,aucun problème détécté.");
 
             if(visibilityRule == LauncherVisibilityRule.CLOSE_LAUNCHER)
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                    	logger.info("Following visibility rule and exiting launcher as the game has ended");
+                    	logger.info("Arrêt du launcher selon la règle.");
                         launcher.closeLauncher("GameLauncher #378");
                     }
                 });
             else if(visibilityRule == LauncherVisibilityRule.HIDE_LAUNCHER)
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                    	logger.info("Following visibility rule and showing launcher as the game has ended");
+                    	logger.info("Affichage du launcher selon la règle.");
                         launcher.getFrame().setVisible(true);
                     }
                 });
         }
         else {
-        	logger.warn("Game ended with bad state (exit code " + exitCode + ")");
+        	launcher.getLauncherPanel().progressBar.setText("[" + exitCode + "] Arrêt du jeu,crash détécté.");
+        	logger.warn("[" + exitCode + "]Arrêt du jeu,crash détécté.");
+
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                	logger.info("Ignoring visibility rule and showing launcher due to a game crash");
+                	logger.info("Règle ignorée car le jeu a crash.");
                     launcher.getFrame().setVisible(true);
                 }
             });
@@ -406,11 +408,10 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
 
             for(int i = sysOut.length - 1; i >= 0; i--) {
                 final String line = sysOut[i];
-                final String crashIdentifier = "#@!@#";
-                final int pos = line.lastIndexOf(crashIdentifier);
+                final int pos = line.lastIndexOf(CRASH_IDENTIFIER_MAGIC);
 
-                if(pos >= 0 && pos < line.length() - crashIdentifier.length() - 1) {
-                    errorText = line.substring(pos + crashIdentifier.length()).trim();
+                if(pos >= 0 && pos < line.length() - CRASH_IDENTIFIER_MAGIC.length() - 1) {
+                    errorText = line.substring(pos + CRASH_IDENTIFIER_MAGIC.length()).trim();
                     break;
                 }
             }
@@ -420,6 +421,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
 
                 if(file.isFile()) {
                 	logger.warn("Crash report detected, opening: " + errorText);
+                	Compatibility.open(file);
                     InputStream inputStream = null;
                     try {
                         inputStream = new FileInputStream(file);
@@ -450,9 +452,11 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
     }
 
     public void playGame() {
+    	launcher.getLauncherPanel().progressBar.setVisible(true);
+    	launcher.getLauncherPanel().progressBar.setText("Essai de démarrage du jeu !!");
         synchronized(lock) {
             if(isWorking) {
-            	logger.info("Tried to play game but game is already starting!");
+            	logger.info("Le jeu démarre déja !!");
                 return;
             }
 
@@ -466,7 +470,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
         });
         */
         logger.info("Chargement des informations de version...");
-        Launcher.getInstance().getLauncherPanel().getProgressBar().setString("Chargement des informations de version...");
+        Launcher.getInstance().getLauncherPanel().progressBar.setText("Chargement des informations de version...");
         final Profile profile = launcher.getProfileManager().getSelectedProfile();
         final String lastVersionId = profile.getLastVersionId();
         VersionSyncInfo syncInfo = null;
@@ -489,11 +493,13 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
         }
 
         synchronized(lock) {
-        	logger.info("Queueing library & version downloads");
+        	logger.info("Création les Librairies & Versions");
+        	launcher.getLauncherPanel().progressBar.setText("Récupération des informations de version.");
             try {
                 version = launcher.getVersionManager().getLatestCompleteVersion(syncInfo);
             }
             catch(final IOException e) {
+            	launcher.getLauncherPanel().progressBar.setText("Echec de récupération des informations de version.");
             	logger.warn("Couldn't get complete version info for " + syncInfo.getLatestVersion(), e);
                 setWorking(false);
                 return;
@@ -508,6 +514,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                     version = remoteVersion;
                 }
                 catch(final IOException e) {
+                	launcher.getLauncherPanel().progressBar.setText("Echec de synchronisation des informations de versions.");
                 	logger.warn("Couldn't sync local and remote versions", e);
                 }
                 version.setSynced(true);
@@ -518,7 +525,9 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                 if(reason == null)
                     reason = "This version is incompatible with your computer. Please try another one by going into Edit Profile and selecting one through the dropdown. Sorry!";
                 logger.warn("Version " + version.getId() + " is incompatible with current environment: " + reason);
-                JOptionPane.showMessageDialog(launcher.getFrame(), reason, "Cannot play game", 0);
+                
+                launcher.getLauncherPanel().progressBar.setText("[MC][" + version.getId() + "] Impossible de jouer,incompatible.");
+                JOptionPane.showMessageDialog(launcher.getFrame(), reason, "[Jeu] Impossible de jouer,incompatible.", 0);
                 setWorking(false);
                 return;
             }
@@ -534,7 +543,8 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                     final VersionList localVersionList = launcher.getVersionManager().getLocalVersionList();
                     if(localVersionList instanceof LocalVersionList) {
                         ((LocalVersionList) localVersionList).saveVersion(version);
-                        logger.info("Installed " + syncInfo.getLatestVersion());
+                    	launcher.getLauncherPanel().progressBar.setText("Version installée : " + syncInfo.getLatestVersion());
+                        logger.info("Version installée : " + syncInfo.getLatestVersion());
                     }
                 }
                 catch(final IOException e) {
@@ -558,15 +568,29 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                 setWorking(false);
                 return;
             }
+            synchronized(lock) {
+                	
+                    if(isWorking() && !hasRemainingJobs())
+                        try {
+                            launchGame();
+                        }
+                        catch(final Throwable ex) {
+                        	logger.warn("Erreur,merci de contacter le support !!", ex);
+                        }
+                	
+         }
         }
     }
 
     private void setWorking(final boolean working) {
         synchronized(lock) {
             if(nativeDir != null) {
-            	logger.info("Deleting " + nativeDir);
-                if(!nativeDir.isDirectory() || FileUtils.deleteQuietly(nativeDir))
+            	launcher.getLauncherPanel().progressBar.setText("Suppression de : " + nativeDir.getName());
+            	logger.info("Suppression de : " + nativeDir);
+                if(!nativeDir.isDirectory() || FileUtils.deleteQuietly(nativeDir)){
                     nativeDir = null;
+                    launcher.getLauncherPanel().progressBar.setText("[Jeu] Prêt au lancement.");
+                }
                 else {
                 	logger.warn("Couldn't delete " + nativeDir + " - scheduling for deletion upon exit");
                     try {
@@ -635,15 +659,5 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
         }
     }
 
-    protected void updateProgressBar() {
-        final float progress = getProgress();
-        final boolean hasTasks = hasRemainingJobs();
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                launcher.getLauncherPanel().getProgressBar().setVisible(hasTasks);
-                launcher.getLauncherPanel().getProgressBar().setValue((int) (progress * 100.0F));
-            }
-        });
-    }
 }

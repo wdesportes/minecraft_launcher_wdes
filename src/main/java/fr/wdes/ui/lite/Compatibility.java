@@ -1,8 +1,10 @@
 package fr.wdes.ui.lite;
 
+import java.awt.Desktop;
 import java.awt.Image;
 import java.awt.Window;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 
@@ -17,26 +19,27 @@ public class Compatibility {
 	 *
 	 * @param uri
 	 */
+	static Desktop desktop;
 	public static void browse(URI uri) {
-		try {
-			Object o = Class.forName("java.awt.Desktop").getMethod("getDesktop", new Class[0]).invoke(null, new Object[0]);
-			o.getClass().getMethod("browse", new Class[]{URI.class}).invoke(o, new Object[]{uri});
-		} catch (Exception e) {
-	
-				e.printStackTrace();
-			
-		}
+
+	        if (desktop.isSupported(Desktop.Action.BROWSE)) {
+	        	try {
+					desktop.browse(uri);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+	        }
+
 	}
 
 	public static void open(File file) {
-		try {
-			Object o = Class.forName("java.awt.Desktop").getMethod("getDesktop", new Class[0]).invoke(null, new Object[0]);
-			o.getClass().getMethod("open", new Class[]{File.class}).invoke(o, new Object[]{file});
-		} catch (Exception e) {
-			
+        if (desktop.isSupported(Desktop.Action.OPEN)) {
+        	try {
+				desktop.open(file);
+			} catch (IOException e) {
 				e.printStackTrace();
-			
-		}
+			}
+        }
 	}
 
 	@SuppressWarnings("rawtypes")
