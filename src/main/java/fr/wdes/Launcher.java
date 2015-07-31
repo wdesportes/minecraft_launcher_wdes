@@ -9,6 +9,11 @@ import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -102,9 +107,13 @@ public class Launcher {
     public JObjectContainer config;
     public String uuid;
     public String appdata;
+    public int width;
+    public int height;
     private final ProfileManager profileManager;
     private UUID clientToken = UUID.randomUUID();
-
+    private File sqlitedb;
+    public Connection db;
+    public Statement statement;
     public Launcher(final JFrame frame,final String uuid,final String appdata, final Proxy proxy, final PasswordAuthentication proxyAuth, final String[] args) {
         this(frame, uuid, appdata, proxy, proxyAuth, args, Integer.valueOf(0));
         System.out.println("Lancement...");
@@ -154,6 +163,14 @@ public class Launcher {
 			else if(!config.forge){
 				LauncherConstants.URL_VERSION_LIST = "https://s3.amazonaws.com/Minecraft.Download/";
 			}
+			if(!config.width.isEmpty() && !config.height.isEmpty()){
+			this.width  = Integer.parseInt(config.width);
+			this.height = Integer.parseInt(config.height);
+			}
+			else{
+			this.width  = Profile.DEFAULT_RESOLUTION.getWidth();
+			this.height = Profile.DEFAULT_RESOLUTION.getHeight();
+			}
         } catch (JsonSyntaxException e) {
 			e.printStackTrace();
 		} catch (MalformedURLException e) {
@@ -175,6 +192,40 @@ public class Launcher {
     			    JOptionPane.ERROR_MESSAGE);
         
         this.workingDirectory = workdir;
+        this.sqlitedb = new File(this.workingDirectory,"wdeslaunchers.db");
+        /** *SQLITE DB*  */
+
+        try {
+          db = DriverManager.getConnection("jdbc:sqlite:"+this.sqlitedb.toPath(),this.uuid,this.appdata);
+          DatabaseMetaData dm = (DatabaseMetaData) db.getMetaData();
+          System.out.println("Driver name: " + dm.getDriverName());
+          System.out.println("Driver version: " + dm.getDriverVersion());
+          System.out.println("Product name: " + dm.getDatabaseProductName());
+          System.out.println("Product version: " + dm.getDatabaseProductVersion());
+          
+        } catch ( Exception e ) {
+          System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+          System.exit(0);
+        }
+        System.out.println("Opened database successfully");
+      
+        try {
+        	
+        	logger.info("WdesLaunchers DB : "+this.sqlitedb.toPath());
+            statement = db.createStatement();
+
+            String query = "CREATE TABLE IF NOT EXISTS Launchers(ID INTEGER PRIMARY KEY AUTOINCREMENT, UUID TEXT, DATE TEXT, LOGO BLOB);";
+            statement.execute(query);
+            String query2 = "CREATE TABLE IF NOT EXISTS Users(ID INTEGER PRIMARY KEY AUTOINCREMENT, USERNAME TEXT, ETAG TEXT, AVATAR BLOB);";
+            statement.execute(query2);
+
+            statement.executeBatch();
+        } catch ( SQLException e) {
+            e.printStackTrace();
+        }
+        
+        /** *SQLITE DB*  */
+  
         logger.info("Launcher WdesLauncher v (1.0) started on " + OperatingSystem.getCurrentPlatform().getName() + "...");
         logger.info("Current time is " + DateFormat.getDateTimeInstance(2, 2, Locale.FRANCE).format(new Date()));
         if(!OperatingSystem.getCurrentPlatform().isSupported())
@@ -205,6 +256,14 @@ public class Launcher {
     }
 
     public void closeLauncher(String source) {
+		try {
+			db.close();
+			if(db.isClosed()){
+				logger.info("Base de données fermée !!");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
     	logger.info("Fermeture demandée par : "+source);
         frame.dispatchEvent(new WindowEvent(frame, 201));
     }
