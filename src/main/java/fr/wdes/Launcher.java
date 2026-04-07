@@ -158,13 +158,7 @@ public class Launcher {
         String configUrl = LauncherConstants.URL_CONFIGS+this.uuid+".conf";
         try {
 			config = gson.fromJson(Http.performGet(new URL(configUrl), proxy),JObjectContainer.class) ;
-			logger.info("UUID Distant : "+config.uuid+" UUID Local : "+this.uuid);
-			if(config.forge){
-				LauncherConstants.URL_VERSION_LIST = "http://download.wdeslaunchers.wdes.fr/";
-			}
-			else if(!config.forge){
-				LauncherConstants.URL_VERSION_LIST = "https://s3.amazonaws.com/Minecraft.Download/";
-			}
+			logger.info(" UUID Local : "+this.uuid);
 			if(!config.width.isEmpty() && !config.height.isEmpty()){
 			this.width  = Integer.parseInt(config.width);
 			this.height = Integer.parseInt(config.height);
