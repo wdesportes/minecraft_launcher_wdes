@@ -80,14 +80,6 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "build-index.sh": {
-      "name": "build-index.sh",
-      "MD5": "9c7baec02f9a111ccef407a2c89e4dd5",
-      "hash": "e054c5e8e5bf8584ef1aa7f4dd56729e8f7065d6",
-      "size": 1619,
-      "compressedHash": null,
-      "compressedSize": 0
-    },
     "news1.png": {
       "name": "news1.png",
       "MD5": "03bad1c7c823bd7562bd8a438bcf534c",

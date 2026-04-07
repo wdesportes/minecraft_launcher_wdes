@@ -37,7 +37,7 @@ result='{}'
 while IFS= read -r -d '' file; do
   name="$(basename "$file")"
 
-  if [ "$name" == "index.json" ]; then
+  if [ "$name" == "index.json" ] || [ "$name" == "build-index.sh" ]; then
    continue
   fi
 
