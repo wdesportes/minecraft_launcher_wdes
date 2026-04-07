@@ -12,8 +12,7 @@ import fr.wdes.events.AuthenticationChangedListener;
 
 
 public class LoadTestingAuthenticationService implements AuthenticationService {
-    private final AuthenticationService primary = new LegacyAuthenticationService();
-    private final AuthenticationService secondary = new YggdrasilAuthenticationService();
+    private final AuthenticationService primary = new YggdrasilAuthenticationService();
 
     public void addAuthenticationChangedListener(final AuthenticationChangedListener listener) {
         primary.addAuthenticationChangedListener(listener);
@@ -53,22 +52,14 @@ public class LoadTestingAuthenticationService implements AuthenticationService {
 
     public void loadFromStorage(final Map<String, String> credentials) {
         primary.loadFromStorage(credentials);
-        secondary.loadFromStorage(credentials);
     }
 
     public void logIn() throws AuthenticationException {
         primary.logIn();
-        try {
-            secondary.logIn();
-        }
-        catch(final AuthenticationException e) {
-        	logger.warn("Couldn't load-test new authentication service (method: logIn)", e);
-        }
     }
 
     public void logOut() {
         primary.logOut();
-        secondary.logOut();
     }
 
     public void removeAuthenticationChangedListener(final AuthenticationChangedListener listener) {
@@ -81,27 +72,18 @@ public class LoadTestingAuthenticationService implements AuthenticationService {
 
     public void selectGameProfile(final GameProfile profile) throws AuthenticationException {
         primary.selectGameProfile(profile);
-        try {
-            secondary.selectGameProfile(profile);
-        }
-        catch(final AuthenticationException e) {
-        	logger.warn("Couldn't load-test new authentication service (method: selectGameProfile)", e);
-        }
     }
 
     public void setPassword(final String password) {
         primary.setPassword(password);
-        secondary.setPassword(password);
     }
 
     public void setRememberMe(final boolean rememberMe) {
         primary.setRememberMe(rememberMe);
-        secondary.setRememberMe(rememberMe);
     }
 
     public void setUsername(final String username) {
         primary.setUsername(username);
-        secondary.setUsername(username);
     }
 
     public boolean shouldRememberMe() {
