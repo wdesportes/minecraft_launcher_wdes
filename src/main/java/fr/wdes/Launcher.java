@@ -176,9 +176,9 @@ public class Launcher {
 			e.printStackTrace();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
         final File workdir = Utilis.getWorkingDirectory();
