@@ -79,7 +79,7 @@ public class VersionManager {
         job.addDownloadables(version.getRequiredDownloadables(OperatingSystem.getCurrentPlatform(), proxy, baseDirectory, false));
 
         final String jarFile = "versions/" + version.getId() + "/" + version.getId() + ".jar";
-        job.addDownloadables(new Downloadable[] { new Downloadable(proxy, new URL(LauncherConstants.URL_DOWNLOAD_BASE + jarFile), new File(baseDirectory, jarFile), false) });
+        job.addDownloadables(new Downloadable[] { new Downloadable(proxy, new URL(LauncherConstants.URL_DOWNLOAD_VERSIONS_BASE + jarFile), new File(baseDirectory, jarFile), false) });
 
         return job;
     }
