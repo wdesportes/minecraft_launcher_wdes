@@ -49,6 +49,27 @@ jobs:
             -d build/classes \
             @sources.txt
 
+      # Eclipse automatically copies non-.java files into the output directory.
+      # The repo also contains committed .class files — we must exclude them so
+      # they don't overwrite the freshly compiled ones in build/classes.
+      - name: Copy resources
+        run: |
+          find . -type f \
+            -not -name "*.java" \
+            -not -name "*.class" \
+            -not -path "./.git/*" \
+            -not -path "./lib/*" \
+            -not -path "./build/*" \
+            -not -path "./.classpath" \
+            -not -path "./.project" \
+          | while read f; do
+              dest="build/classes/${f#./}"
+              mkdir -p "$(dirname "$dest")"
+              cp "$f" "$dest"
+            done
+          echo "=== Resources copied ==="
+          find build/classes -not -name "*.class" -type f
+
       - name: Detect main class
         id: mainclass
         run: |
@@ -65,13 +86,11 @@ jobs:
 
       - name: Build fat launcher.jar
         run: |
-          # Unpack dependencies into the classes directory so everything is
-          # bundled in a single self-contained JAR — the same result as
-          # Eclipse's "Export → Runnable JAR → Extract required libraries".
+          # Unpack dependencies so the JAR is fully self-contained (replicates
+          # Eclipse's "Export → Runnable JAR → Extract required libraries").
           cd build/classes
           jar xf ../../lib/commons-codec-1.10.jar
           jar xf ../../lib/org.jar
-          # Remove META-INF signatures that would break the merged JAR
           rm -rf META-INF/MANIFEST.MF META-INF/*.SF META-INF/*.DSA META-INF/*.RSA
           cd ../..
 
@@ -81,7 +100,7 @@ jobs:
           jar cfm build/launcher.jar build/MANIFEST.MF -C build/classes .
 
           echo "=== JAR contents ==="
-          jar tf build/launcher.jar | head -40
+          jar tf build/launcher.jar | head -60
 
       - name: Upload launcher.jar
         uses: actions/upload-artifact@v7
