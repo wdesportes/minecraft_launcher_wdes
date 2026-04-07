@@ -33,27 +33,13 @@ jobs:
             "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.10/commons-codec-1.10.jar" \
             -o lib/commons-codec-1.10.jar
 
-      # org.jar is a local Minecraft library referenced by an absolute path in the
-      # original .classpath.  If you have committed it to the repository (or a
-      # libs/ folder), adjust the path below.  Otherwise supply it as a secret or
-      # artifact and uncomment the appropriate block.
-      #
-      # Option A – committed directly in the repo:
-      #   cp org.jar lib/org.jar
-      #
-      # Option B – stored as a GitHub Actions secret (base64-encoded):
-      #   echo "${{ secrets.ORG_JAR_B64 }}" | base64 -d > lib/org.jar
-      - name: Locate org.jar
+      # org.jar is the org.json library, widely used by Minecraft launchers of this era
+      # to parse Mojang's JSON responses. We download it from Maven Central.
+      - name: Download org.json (org.jar)
         run: |
-          if [ -f "org.jar" ]; then
-            cp org.jar lib/org.jar
-          elif [ -f "lib/org.jar" ]; then
-            echo "lib/org.jar already present"
-          else
-            echo "::warning::org.jar not found – compilation may fail." \
-                 "Add it to the repository root or provide it via the ORG_JAR_B64 secret."
-            touch lib/org.jar   # placeholder so the classpath stays valid
-          fi
+          curl -fsSL \
+            "https://repo1.maven.org/maven2/org/json/json/20140107/json-20140107.jar" \
+            -o lib/org.jar
 
       # ── Compile ─────────────────────────────────────────────────────────────
       - name: Compile Java sources
