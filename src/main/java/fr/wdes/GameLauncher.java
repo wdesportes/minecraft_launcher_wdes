@@ -212,7 +212,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
     	    String assetVersion = version.getAssets() == null ? "legacy" : version.getAssets();
     	    File indexFile = new File(indexDir, assetVersion + ".json");
     	    AssetIndex index = (AssetIndex)this.gson.fromJson(FileUtils.readFileToString(indexFile), AssetIndex.class);
-    	    
+
     	    String hash = ((AssetIndex.AssetObject)index.getFileMap().get(name)).getHash();
     	    return new File(objectsDir, hash.substring(0, 2) + "/" + hash);
     	  }
@@ -333,9 +333,9 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
             	for(final String part : jars) {
             		logger.info("Part : "+part.replace(Launcher.getInstance().getWorkingDirectory().toString(), ""));
             	}
-        	
-        	
-        	
+
+
+
             logger.info("Démarré " + full.toString());
             launcher.getLauncherPanel().progressBar.setText("Processus démarré !!");
             final JavaProcess process = processLauncher.start();
@@ -525,7 +525,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                 if(reason == null)
                     reason = "This version is incompatible with your computer. Please try another one by going into Edit Profile and selecting one through the dropdown. Sorry!";
                 logger.warn("Version " + version.getId() + " is incompatible with current environment: " + reason);
-                
+
                 launcher.getLauncherPanel().progressBar.setText("[MC][" + version.getId() + "] Impossible de jouer,incompatible.");
                 JOptionPane.showMessageDialog(launcher.getFrame(), reason, "[Jeu] Impossible de jouer,incompatible.", 0);
                 setWorking(false);
@@ -557,7 +557,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                 addJob(job);
                 launcher.getVersionManager().downloadVersion(syncInfo, job);
                 job.startDownloading(launcher.getVersionManager().getExecutorService());
-                
+
                 DownloadJob resourceJob = new DownloadJob("Resources", true, this);
                 addJob(resourceJob);
                 launcher.getVersionManager().downloadResources(resourceJob, this.version);
@@ -569,7 +569,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                 return;
             }
             synchronized(lock) {
-                	
+
                     if(isWorking() && !hasRemainingJobs())
                         try {
                             launchGame();
@@ -577,7 +577,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                         catch(final Throwable ex) {
                         	logger.warn("Erreur,merci de contacter le support !!", ex);
                         }
-                	
+
          }
         }
     }
