@@ -24,7 +24,6 @@ I8,        8        ,8I         88                            88                
     public static final String USER_AGENT            = "Mozilla/5.0 (WdesAuth; fr-FR) Gecko/20100316 Firefox/3.6.2";
     public static final String LIBRARY_DOWNLOAD_BASE = "https://libraries.minecraft.net/";
     public static final String URL_CONFIGS           = "http://wdeslaunchers.wdes.fr/configs/";
-    public static String URL_VERSION_LIST            = "https://s3.amazonaws.com/Minecraft.Download/";
     public static final String URL_DOWNLOAD_VERSIONS_BASE     = "http://wdeslaunchers.wdes.fr/";// versions/{version}/{version}.jar
     public static final String URL_DOWNLOAD_INDEXES_BASE      = "http://wdeslaunchers.wdes.fr/";// indexes/{indexName}.json
     public static final String URL_STATUS_CHECKER    = Launcher.getInstance().config.URL_STATUS_CHECKER;

@@ -26,7 +26,7 @@ public class RemoteVersionList extends VersionList {
 
     @Override
     protected String getContent(final String path) throws IOException {
-        return Http.performGet(new URL(LauncherConstants.URL_VERSION_LIST + path), proxy);
+        return Http.performGet(new URL(LauncherConstants.URL_DOWNLOAD_VERSIONS_BASE + path), proxy);
     }
 
     public Proxy getProxy() {
