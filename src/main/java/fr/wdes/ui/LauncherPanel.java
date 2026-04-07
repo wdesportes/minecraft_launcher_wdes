@@ -137,7 +137,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 				minecraft = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(Font.PLAIN, 12f);
 			} catch (FontFormatException e) {
 				e.printStackTrace();
-			} 
+			}
 			 catch ( IOException e) {
 					e.printStackTrace();
 				}
@@ -166,7 +166,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	       this.options.addActionListener(this);
 	       this.options.setBorder(BorderFactory.createEmptyBorder());
 	       this.options.setContentAreaFilled(false);
-	       
+
   	       this.minimize = new TransparentButton();
   	       this.minimize.setIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(minimizeIcon)));
   			if (OperatingSystem.getOS().isMac()) {
@@ -180,7 +180,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
   	       this.minimize.addActionListener(this);
   	       this.minimize.setBorder(BorderFactory.createEmptyBorder());
   	       this.minimize.setContentAreaFilled(false);
-  	  
+
   	       this.close = new TransparentButton();
   	       this.close.setIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(closeIcon)));
   			if (OperatingSystem.getOS().isMac()) {
@@ -194,15 +194,15 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
   	  	   this.close.addActionListener(this);
   	       this.close.setBorder(BorderFactory.createEmptyBorder());
   	       this.close.setContentAreaFilled(false);
-  	  
+
   	       this.logininput.setPlaceholder(LauncherConstants.PLACEHOLDER_LOGIN);
   	       this.logininput.setBounds(FRAME_WIDTH / 2 - 90, 309 + yShift, 180, 24);
   	       this.logininput.setBackground(new Color(0, 0, 0, 150));
   	       this.logininput.setForeground(Color.LIGHT_GRAY);
 	       this.logininput.setFont(minecraft);
-	        
+
   	       this.passwordinput.setPlaceholder(LauncherConstants.PLACEHOLDER_PASSD);
-  	       this.passwordinput.setBounds(FRAME_WIDTH / 2 - 90, 338 + yShift, 180, 24);      
+  	       this.passwordinput.setBounds(FRAME_WIDTH / 2 - 90, 338 + yShift, 180, 24);
   	       this.passwordinput.setBackground(new Color(0, 0, 0, 150));
   	       this.passwordinput.setForeground(Color.LIGHT_GRAY);
 	       this.passwordinput.setFont(minecraft);
@@ -211,27 +211,27 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
   	       this.gamebtn.addActionListener(this);
   	       this.gamebtn.setActionCommand(GAME_ACTION);
 	       this.gamebtn.setFont(minecraft);
-  	       
-	       this.loginbtn.setBounds(FRAME_WIDTH / 2 + 5, 367 + yShift, 90, 24); 
+
+	       this.loginbtn.setBounds(FRAME_WIDTH / 2 + 5, 367 + yShift, 90, 24);
 	       this.loginbtn.addActionListener(this);
 	       this.loginbtn.setActionCommand(LOGIN_ACTION);
 	       this.loginbtn.setFont(minecraft);
-	       
+
 	       this.welcomeText.setBounds(10, 450, 200, 24);
 	       this.welcomeText.setOpaque(false);
 	       this.welcomeText.setVisible(false);
  	       this.welcomeText.setForeground(Color.WHITE);
  	       this.welcomeText.setFont(minecraft);
- 	       
+
 	       this.versionText.setBounds(605, 450, 300, 24);
 	       this.versionText.setOpaque(false);
 	       this.versionText.setVisible(false);
  	       this.versionText.setForeground(Color.WHITE);
  	       this.versionText.setFont(minecraft);
- 	       
+
 	       this.errorLabel.setBounds(500, 450, 300, 24);
 	       this.errorLabel.setOpaque(false);
-	       
+
  	       this.progressBar.setBounds(FRAME_WIDTH / 2 - 192, passwordinput.getY() + 60, 384, 23);
  	       this.progressBar.setVisible(false);
  	       this.progressBar.setStringPainted(true);
@@ -239,7 +239,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
  	       this.progressBar.setTransparency(0.70F);
  	       this.progressBar.setHoverTransparency(0.70F);
  	       this.progressBar.setFont(minecraft);
- 	        
+
  	       this.remember.setBounds(FRAME_WIDTH / 2 - 95, 367 + yShift, 110, 24);
  	       this.remember.setOpaque(false);
  	       this.remember.setBorderPainted(false);
@@ -248,14 +248,14 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
  	       this.remember.setForeground(Color.WHITE);
  	       this.remember.setFont(minecraft);
  	       this.remember.setSelected(true);
- 	       
+
  	        JLink home = new JLink("Wdes", "https://wdes.fr", "Wdes.fr", 10, FRAME_HEIGHT - 27, 65, 20);
  	        JLinks.add(home);
  	        JLink forums = new JLink("Forum", "https://launchers.wdes.fr", "Wdes.fr", 82, FRAME_HEIGHT - 27, 90, 20);
  	        JLinks.add(forums);
  	        JLink donate = new JLink("Donner", "https://launchers.wdes.fr", "Wdes.fr", 185, FRAME_HEIGHT - 27, 85, 20);
  	        JLinks.add(donate);
- 			
+
  	       for(JLink link: JLinks) {
  	          HyperlinkJLabel alink = new HyperlinkJLabel(link.getName(), link.getLink());
  	          alink.setToolTipText(link.getToolTip());
@@ -293,22 +293,22 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	        }
 
 
- 			
+
  			bottomRectangle.setBounds(0, FRAME_HEIGHT - 34, FRAME_WIDTH, 34);
  			bottomRectangle.setBackground(new Color(30, 30, 30, 180));
  			bottomRectangle.setOpaque(true);
   	        logo.setBounds(FRAME_WIDTH / 2 - 200, 35, 400, 109);
-  	        
 
-		
-			
+
+
+
   	        try {
 				setIcon(logo,getLogo(Launcher.getInstance().uuid), logo.getWidth(), logo.getHeight());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-  	       
-  	      
+
+
   	        launcherhome.add(logo);
   	        launcherhome.add(logininput);
   	        launcherhome.add(passwordinput);
@@ -320,7 +320,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
   	        launcherhome.add(bottomRectangle);
 			launcherhome.add(remember);
   	        return launcherhome;
-      
+
     }
     private void log_out(){
     	  loggedin = false;
@@ -392,11 +392,11 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 
 	public byte[] BufferedImageToByteArray(BufferedImage orImage){
 		  try{
-		   
+
 		  ByteArrayOutputStream baos=new ByteArrayOutputStream();
-		  
+
 		  ImageIO.write(orImage, "png", baos );
-		  
+
 		  byte[] imageBytes=baos.toByteArray();
 		  //do something with the byte array
 		  return imageBytes;
@@ -406,10 +406,10 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	private CallbackTask getImage(final String user) {
 		return new CallbackTask(new Callable<BufferedImage>() {
 			public BufferedImage call() throws Exception {
-				URL url = new URL("https://minotar.net/helm/" + user + "/100");  
+				URL url = new URL("https://minotar.net/helm/" + user + "/100");
 				byte[] AVATAR = null;
 				BufferedImage image = null;
-			
+
 
         try {
 			Statement s = Launcher.getInstance().db.createStatement();
@@ -417,22 +417,22 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 			r.next();
 			int count = r.getInt("rowcount") ;
 			r.close() ;
-			
+
 			System.out.println("[Avatar] WdesLaunchers has " + count + " row(s).");
-			
-           
+
+
                 HttpURLConnection connection = null;
              if(count == 0){
-            	 connection = (HttpURLConnection) url.openConnection();	
+            	 connection = (HttpURLConnection) url.openConnection();
              }
              else{
             	 String query = "SELECT * FROM Users WHERE USERNAME='"+user+"'";
                  Statement statement = Launcher.getInstance().db.createStatement();
-                 ResultSet rslt=statement.executeQuery(query);  
+                 ResultSet rslt=statement.executeQuery(query);
                  logger.info("Récupération de ta tète de : " + user + "...");
-                     rslt.next(); 
+                     rslt.next();
                      String  ETAG = rslt.getString("ETAG");
-                     AVATAR=rslt.getBytes("AVATAR"); 
+                     AVATAR=rslt.getBytes("AVATAR");
             	connection = Http.performHead(url, Launcher.getInstance().getProxy(),"If-None-Match", ETAG);
              }
 
@@ -440,79 +440,79 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
         		logger.info("Avatar Téléchargé depuis la base de données etag : "+connection.getHeaderField("Etag")+"!!");
         		InputStream in = new ByteArrayInputStream(AVATAR);
         		image = ImageIO.read(in);
-                // byte[] imgArr=rslt.getBytes("image");  
+                // byte[] imgArr=rslt.getBytes("image");
                 // image=Toolkit.getDefaultToolkit().createImage(imgArr);
         	}
         	else if(connection.getResponseCode() == 200){
         		logger.info("Avatar Téléchargé !!");
-        		InputStream stream = new BufferedInputStream(connection.getInputStream());     
+        		InputStream stream = new BufferedInputStream(connection.getInputStream());
 			      image = ImageIO.read(stream);
 					if (image == null) {
 						throw new NullPointerException("No avatar helm downloaded!");
 					}
-					
+
 					String sql = "INSERT INTO Users (ID,USERNAME,ETAG,AVATAR) " +"VALUES (NULL,'" + user + "', '"+connection.getHeaderField("Etag")+"', ? );";
 					PreparedStatement statement = Launcher.getInstance().db.prepareStatement(sql);
 					statement.setBytes(1, BufferedImageToByteArray(image));
 					statement.executeUpdate();
 					statement.close();
-	
 
-					
 
-			              
-			      
+
+
+
+
 					logger.info("Avatar Téléchargé !!");
-				
-					
- 
+
+
+
 
             }
         	connection.disconnect();
         	return image;
-        	
+
         }
         finally {
 
         }
-        
 
-					
-					
 
-				
+
+
+
+
 			}
 		});
 	}
 	private BufferedImage getLogo(final String uuid) throws Exception {
-		
+
 				URL url = new URL("http://wdeslaunchers.wdes.fr/logos/" + uuid + ".png");
 				byte[] LOGO = null;
 				BufferedImage image = null;
-			
 
-        
+
+
 			Statement s = Launcher.getInstance().db.createStatement();
 			ResultSet r = s.executeQuery("SELECT COUNT(ID) AS rowcount FROM Launchers WHERE UUID='"+uuid+"'");
 			r.next();
 			int count = r.getInt("rowcount") ;
 			r.close() ;
-			
+
 			logger.info("[Logo] WdesLaunchers has " + count + " row(s).");
-			
-           
+
+
                 HttpURLConnection connection = null;
              if(count == 0){
-            	 connection = (HttpURLConnection) url.openConnection();	
+            	 connection = (HttpURLConnection) url.openConnection();
              }
              else{
             	 String query = "SELECT * FROM Launchers WHERE UUID='"+uuid+"'";
                  Statement statement = Launcher.getInstance().db.createStatement();
-                 ResultSet rslt=statement.executeQuery(query);  
+                 ResultSet rslt=statement.executeQuery(query);
                  logger.info("[Logo] Récupération du logo du serveur : " + uuid + "...");
-                     rslt.next(); 
+                     rslt.next();
                      String  DATE = rslt.getString("DATE");
-                     LOGO=rslt.getBytes("LOGO"); 
+                     LOGO=rslt.getBytes("LOGO");
             	connection = Http.performHead(url, Launcher.getInstance().getProxy(),"If-Modified-Since", DATE);
              }
         	if(connection.getResponseCode() == 304 && count == 1){
@@ -522,13 +522,13 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
         	}
         	else if(connection.getResponseCode() == 200){
         		connection = (HttpURLConnection) url.openConnection();
-        		InputStream stream = new BufferedInputStream(connection.getInputStream());     
+        		InputStream stream = new BufferedInputStream(connection.getInputStream());
 			      image = ImageIO.read(stream);
 					if (image == null) {
 						logger.info("[Logo] Aucun logo n'a pu être téléchargé, le logo par défault serra utilisé !!");
 						return getDefaultLogo();
 					}
-					
+
 					if(count == 1){
 						String sql = "DELETE FROM Launchers WHERE UUID='" + uuid + "';";
 						PreparedStatement statement = Launcher.getInstance().db.prepareStatement(sql);
@@ -536,9 +536,9 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 						statement.close();
 						logger.info("Logo Effacé !!");
 					}
-					
+
 					String sql = "INSERT INTO Launchers (ID,UUID,DATE,LOGO) VALUES (NULL,'" + uuid + "', '"+connection.getHeaderField("Last-Modified")+"', ? );";
-					
+
 					PreparedStatement statement = Launcher.getInstance().db.prepareStatement(sql);
 					statement.setBytes(1, BufferedImageToByteArray(image));
 					statement.executeUpdate();
@@ -548,13 +548,13 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
             }
         	connection.disconnect();
         	return image;
-        	
 
 
-	
+
+
 			}
-	
-	
+
+
     public LauncherPanel(final Launcher launcher) {
         this.launcher = launcher;
         cardLayout = new CardLayout();
@@ -573,11 +573,11 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 
     protected void createInterface() {
         add(createLauncherInterface(), "launcher");
-        
+
     }
 
     protected JPanel createLauncherInterface() {
-    	
+
         final JPanel result = new JPanel(new BorderLayout());
 
         //tabPanel.getBlog().setPage(LauncherConstants.URL_BLOG);
@@ -590,14 +590,14 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
       	topWrapper.add(options, new Integer(3));
         topWrapper.setLayout(new BorderLayout());
         topWrapper.add(CreateHome(), "Center");
-        
+
 
         //getTabPanel().getConsole().setVisible(false);
- 
+
 
         result.add(topWrapper, "Center");
         //result.add(bottomBar, "South");
- 
+
         return result;
     }
 
@@ -614,19 +614,19 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
     public LiteProgressBar getProgressBar() {
         return progressBar;
     }
-    
+
     public LauncherTabPanel getTabPanel() {
         return tabPanel;
     }
-	
+
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() instanceof JComponent) {
 			action(e.getActionCommand(), (JComponent)e.getSource());
 		}
 	}
 	public void action(String command, JComponent c) {
-		
-	
+
+
 		logger.info("Action : "+command);
 		if(command == CLOSE_ACTION){
 			Launcher.getInstance().closeLauncher("Boutton de fermeture");
@@ -640,11 +640,11 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 			CreateHome().setVisible(false);
 			getTabPanel().getConsole().setVisible(true);
 			topWrapper.remove(CreateHome());
-			topWrapper.add(getTabPanel().getConsole(), "Center");	
+			topWrapper.add(getTabPanel().getConsole(), "Center");
 			console = true;
 			}
 		else if(console == true){
-				
+
 				//getTabPanel().getConsole().setVisible(false);
 				topWrapper.remove(getTabPanel().getConsole());
 				topWrapper.add(CreateHome(), "Center");
@@ -678,7 +678,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 			tryLogIn();
 			checkState();
 			checkPlayerState();
-			
+
         }
 		else if (command.equals(STEAM_ACTION)) {
 			try {
@@ -719,8 +719,8 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 		else{
 			logger.info("Action de ?? : "+command);
 		}
-		
-		
+
+
 	}
     public void checkState() {
         final Profile profile = launcher.getProfileManager().getProfiles().isEmpty() ? null : launcher.getProfileManager().getSelectedProfile();
@@ -773,7 +773,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
             this.progressBar.setVisible(true);
             this.progressBar.setValue(100);
             this.progressBar.setString("En attente de votre connexion");
-            
+
         }
         else if(auth.getSelectedProfile() == null) {
             welcomeText.setText("Bienvenue, joueur!");
@@ -781,11 +781,11 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
         }
         else {
             welcomeText.setText("Bienvenue," + auth.getUsername() + "");
-            
+
             this.loginbtn.setVisible(false);
             this.gamebtn.setVisible(true);
             this.gamebtn.setEnabled(true);
-            
+
             //this.logoutbtn.setVisible(true);
             this.logininput.setText(auth.getUsername());
             this.progressBar.setVisible(false);
@@ -834,7 +834,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 		checkState();
 		checkPlayerState();
 	}
-	
+
 	public void onProfilesRefreshed(ProfileManager paramProfileManager) {
 		checkState();
 		checkPlayerState();
@@ -849,7 +849,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 
 
             GameProfile selectedProfile = null;
-            
+
             if(selectedProfile == null)
                 selectedProfile = authentication.getAvailableProfiles()[0];
 
@@ -875,14 +875,14 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
             });
         }
         else {
-        	
+
             authentication.logOut();
             authentication.setUsername(logininput.getText());
             authentication.setPassword(String.valueOf(passwordinput.getPassword()));
-            
+
             final int passwordLength = passwordinput.getPassword().length;
 
-            
+
 
             launcher.getVersionManager().getExecutorService().execute(new Runnable() {
                 public void run() {
@@ -941,7 +941,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
     		logger.info("Demande d'enregistrement pour : "+username+" => "+uuid);
 	   Profile selectedProfile = launcher.getProfileManager().getSelectedProfile();
         final AuthenticationService auth = launcher.getProfileManager().getAuthDatabase().getByUUID(uuid);
-        
+
         selectedProfile.setPlayerUUID(uuid);
 
         if(selectedProfile.getName().equals(LauncherConstants.DEFAULT_PROFILE_NAME) && auth.getSelectedProfile() != null) {
@@ -980,5 +980,5 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 
     	}
     }
-	
+
 }
