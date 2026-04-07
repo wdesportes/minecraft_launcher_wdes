@@ -486,7 +486,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	}
 	private BufferedImage getLogo(final String uuid) throws Exception {
 		
-				URL url = new URL("http://download.wdeslaunchers.wdes.fr/logos/" + uuid + ".png");  
+				URL url = new URL("http://wdeslaunchers.wdes.fr/logos/" + uuid + ".png");
 				byte[] LOGO = null;
 				BufferedImage image = null;
 			
