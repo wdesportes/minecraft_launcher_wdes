@@ -63,7 +63,7 @@ public class VersionManager {
         final File baseDirectory = ((LocalVersionList) localVersionList).getBaseDirectory();
         logger.info("Démarrage de la tache des ressources ");
         job.addDownloadables(getResourceFiles(((RemoteVersionList)this.remoteVersionList).getProxy(), baseDirectory,version));
-    
+
         return job;
     }
 
@@ -174,7 +174,7 @@ public class VersionManager {
       {
         IOUtils.closeQuietly(inputStream);
       }
-      
+
       return result;
     }
     private Set<Downloadable> Telecharger_fonds(Proxy proxy)
@@ -190,15 +190,15 @@ public class VersionManager {
       {
         URL indexUrl = new URL(LauncherConstants.URL_FONDS_DOWNLOAD);
         Http.performGet(indexUrl, proxy);
-   
+
         String json = Http.performGet(indexUrl, proxy);
         //FileUtils.writeStringToFile(indexFile, json);
-        
+
         Fonds index = (Fonds)this.gson.fromJson(json, Fonds.class);
         logger.info("Traitement des fonds.");
         for (Map.Entry<Fonds.Fond, String> entry : index.getUniqueObjects().entrySet())
         {
-        	
+
         	Fonds.Fond object = (Fonds.Fond)entry.getKey();
           String filename = object.getName();
           //File file = new File(dossier_fonds, filename);
@@ -223,7 +223,7 @@ public class VersionManager {
       {
         IOUtils.closeQuietly(inputStream);
       }
-      
+
       return result;
     }
     public List<VersionSyncInfo> getVersions() {
@@ -347,7 +347,7 @@ public class VersionManager {
     public DownloadJob telecharger_fonds(final DownloadJob job) throws IOException {
     	logger.info("Démarrage de la tache des ressources ");
         job.addDownloadables(Telecharger_fonds(Launcher.getInstance().getProxy()));
-    
+
         return job;
     }
 }
