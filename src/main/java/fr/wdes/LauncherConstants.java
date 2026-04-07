@@ -4,17 +4,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 public class LauncherConstants {
 	/**
-                                                                                                                                                                             
-I8,        8        ,8I         88                            88                                                             88                                              
-`8b       d8b       d8'         88                            88                                                             88                                              
- "8,     ,8"8,     ,8"          88                            88                                                             88                                              
-  Y8     8P Y8     8P   ,adPPYb,88   ,adPPYba,  ,adPPYba,     88           ,adPPYYba,  88       88  8b,dPPYba,    ,adPPYba,  88,dPPYba,    ,adPPYba,  8b,dPPYba,  ,adPPYba,  
-  `8b   d8' `8b   d8'  a8"    `Y88  a8P_____88  I8[    ""     88           ""     `Y8  88       88  88P'   `"8a  a8"     ""  88P'    "8a  a8P_____88  88P'   "Y8  I8[    ""  
-   `8a a8'   `8a a8'   8b       88  8PP"""""""   `"Y8ba,      88           ,adPPPPP88  88       88  88       88  8b          88       88  8PP"""""""  88           `"Y8ba,   
-    `8a8'     `8a8'    "8a,   ,d88  "8b,   ,aa  aa    ]8I     88           88,    ,88  "8a,   ,a88  88       88  "8a,   ,aa  88       88  "8b,   ,aa  88          aa    ]8I  
-     `8'       `8'      `"8bbdP"Y8   `"Ybbd8"'  `"YbbdP"'     88888888888  `"8bbdP"Y8   `"YbbdP'Y8  88       88   `"Ybbd8"'  88       88   `"Ybbd8"'  88          `"YbbdP"'  
-                                                                                                                       
-                                                                                                                                                                             
+
+I8,        8        ,8I         88                            88                                                             88
+`8b       d8b       d8'         88                            88                                                             88
+ "8,     ,8"8,     ,8"          88                            88                                                             88
+  Y8     8P Y8     8P   ,adPPYb,88   ,adPPYba,  ,adPPYba,     88           ,adPPYYba,  88       88  8b,dPPYba,    ,adPPYba,  88,dPPYba,    ,adPPYba,  8b,dPPYba,  ,adPPYba,
+  `8b   d8' `8b   d8'  a8"    `Y88  a8P_____88  I8[    ""     88           ""     `Y8  88       88  88P'   `"8a  a8"     ""  88P'    "8a  a8P_____88  88P'   "Y8  I8[    ""
+   `8a a8'   `8a a8'   8b       88  8PP"""""""   `"Y8ba,      88           ,adPPPPP88  88       88  88       88  8b          88       88  8PP"""""""  88           `"Y8ba,
+    `8a8'     `8a8'    "8a,   ,d88  "8b,   ,aa  aa    ]8I     88           88,    ,88  "8a,   ,a88  88       88  "8a,   ,aa  88       88  "8b,   ,aa  88          aa    ]8I
+     `8'       `8'      `"8bbdP"Y8   `"Ybbd8"'  `"YbbdP"'     88888888888  `"8bbdP"Y8   `"YbbdP'Y8  88       88   `"Ybbd8"'  88       88   `"Ybbd8"'  88          `"YbbdP"'
+
+
 	 */
     public static final String UUID                  = Launcher.getInstance().uuid;
     public static final String VERSION_MINECRAFT     = Launcher.getInstance().config.version;//auto-mc
