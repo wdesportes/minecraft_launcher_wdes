@@ -156,7 +156,11 @@ public class VersionManager {
           File file = new File(objectsFolder, filename);
           if ((!file.isFile()) || (FileUtils.sizeOf(file) != object.getSize()))
           {
-            Downloadable downloadable = new AssetDownloadable(proxy, (String)entry.getValue(), object, "http://resources.download.minecraft.net/", objectsFolder);
+            Downloadable downloadable = new AssetDownloadable(
+                proxy, (String)entry.getValue(), object,
+                LauncherConstants.URL_ASSETS_DOWNLOAD_BASE,
+                objectsFolder
+            );
             downloadable.setExpectedSize(object.getSize());
             result.add(downloadable);
           }
