@@ -22,11 +22,9 @@ import fr.wdes.versions.Version;
 public class LocalVersionList extends FileBasedVersionList {
 	protected final File baseDirectory;
     protected final File baseVersionsDir;
-    protected final String baseUrl;
-    public LocalVersionList(String baseUrl,File baseDirectory) {
+    public LocalVersionList(File baseDirectory) {
         if(baseDirectory == null || !baseDirectory.isDirectory())
             throw new IllegalArgumentException("Base directory is not a folder!");
-        this.baseUrl = baseUrl;
         this.baseDirectory = baseDirectory;
         baseVersionsDir = new File(this.baseDirectory, "versions");
         if(!baseVersionsDir.isDirectory())
@@ -107,10 +105,4 @@ public class LocalVersionList extends FileBasedVersionList {
         writer.print(text);
         writer.close();
     }
-
-    public URL getUrl(String file)
-    	    throws MalformedURLException
-    	  {
-    	    return new URL(this.baseUrl + file);
-    	  }
 }

@@ -255,7 +255,10 @@ public class Launcher {
 
         gameLauncher = new GameLauncher(this);
         profileManager = new ProfileManager(this);
-        versionManager = new VersionManager(new LocalVersionList(LauncherConstants.URL_RESOURCE_BASE,this.workingDirectory), new RemoteVersionList(LauncherConstants.URL_RESOURCE_BASE,proxy));
+        versionManager = new VersionManager(
+            new LocalVersionList(this.workingDirectory),
+            new RemoteVersionList(proxy)
+        );
         launcherPanel = new LauncherPanel(this);
         initializeFrame();
 

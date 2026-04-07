@@ -194,7 +194,4 @@ public abstract class VersionList {
             throw new IllegalArgumentException("Cannot set latest version to null");
         latestVersions.put(version.getType(), version);
     }
-
-    public abstract URL getUrl(String paramString)
-    	    throws MalformedURLException;
 }

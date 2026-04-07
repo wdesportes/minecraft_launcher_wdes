@@ -44,13 +44,13 @@ import fr.wdes.versions.Version;
 
 public class VersionManager {
 	protected final VersionList localVersionList;
-	protected final VersionList remoteVersionList;
+	protected final RemoteVersionList remoteVersionList;
 	protected final ThreadPoolExecutor executorService = new ExceptionalThreadPoolExecutor(8);
 	protected final List<RefreshedVersionsListener> refreshedVersionsListeners = Collections.synchronizedList(new ArrayList<RefreshedVersionsListener>());
 	protected final Object refreshLock = new Object();
 	protected boolean isRefreshing;
 	protected final Gson gson = new Gson();
-    public VersionManager(final VersionList localVersionList, final VersionList remoteVersionList) {
+    public VersionManager(final VersionList localVersionList, final RemoteVersionList remoteVersionList) {
         this.localVersionList = localVersionList;
         this.remoteVersionList = remoteVersionList;
     }
@@ -62,7 +62,7 @@ public class VersionManager {
     public DownloadJob downloadResources(final DownloadJob job, CompleteVersion version) throws IOException {
         final File baseDirectory = ((LocalVersionList) localVersionList).getBaseDirectory();
         logger.info("Démarrage de la tache des ressources ");
-        job.addDownloadables(getResourceFiles(((RemoteVersionList)this.remoteVersionList).getProxy(), baseDirectory,version));
+        job.addDownloadables(getResourceFiles(this.remoteVersionList.getProxy(), baseDirectory,version));
 
         return job;
     }
@@ -70,11 +70,10 @@ public class VersionManager {
     public DownloadJob downloadVersion(final VersionSyncInfo syncInfo, final DownloadJob job) throws IOException {
         if(!(localVersionList instanceof LocalVersionList))
             throw new IllegalArgumentException("Cannot download if local repo isn't a LocalVersionList");
-        if(!(remoteVersionList instanceof RemoteVersionList))
-            throw new IllegalArgumentException("Cannot download if local repo isn't a RemoteVersionList");
+
         final CompleteVersion version = getLatestCompleteVersion(syncInfo);
         final File baseDirectory = ((LocalVersionList) localVersionList).getBaseDirectory();
-        final Proxy proxy = ((RemoteVersionList) remoteVersionList).getProxy();
+        final Proxy proxy = remoteVersionList.getProxy();
 
         job.addDownloadables(version.getRequiredDownloadables(OperatingSystem.getCurrentPlatform(), proxy, baseDirectory, false));
 
@@ -126,7 +125,7 @@ public class VersionManager {
         return localVersionList;
     }
 
-    public VersionList getRemoteVersionList() {
+    public RemoteVersionList getRemoteVersionList() {
         return remoteVersionList;
     }
 
@@ -145,7 +144,7 @@ public class VersionManager {
       File indexFile = new File(indexesFolder, indexName + ".json");
       try
       {
-        URL indexUrl = this.remoteVersionList.getUrl("indexes/" + indexName + ".json");
+        URL indexUrl = this.remoteVersionList.getIndex(indexName);
         inputStream = indexUrl.openConnection(proxy).getInputStream();
         String json = IOUtils.toString(inputStream);
         FileUtils.writeStringToFile(indexFile, json);

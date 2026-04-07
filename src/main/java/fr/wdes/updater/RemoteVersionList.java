@@ -13,18 +13,17 @@ import fr.wdes.versions.CompleteVersion;
 
 public class RemoteVersionList extends VersionList {
     private final Proxy proxy;
-    private final String baseUrl;
-    public RemoteVersionList(String baseUrl, Proxy proxy)
+    public RemoteVersionList(Proxy proxy)
     {
-      this.baseUrl = baseUrl;
       this.proxy = proxy;
     }
-    public URL getUrl(String file)
-    	    throws MalformedURLException
-    	  {
-    	    return new URL(this.baseUrl + file);
-    	  }
-    	  
+
+    public URL getIndex(String indexName) throws MalformedURLException
+    {
+        String url = LauncherConstants.URL_DOWNLOAD_INDEXES_BASE + "indexes/" + indexName + ".json";
+        return new URL(url);
+    }
+
     @Override
     protected String getContent(final String path) throws IOException {
         return Http.performGet(new URL(LauncherConstants.URL_VERSION_LIST + path), proxy);
