@@ -36,6 +36,11 @@ result='{}'
 
 while IFS= read -r -d '' file; do
   name="$(basename "$file")"
+
+  if [ "$name" == "index.json" ]; then
+   continue
+  fi
+
   key="$name"
   size=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file")
   hash=$(sha1 "$file")

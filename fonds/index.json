@@ -82,17 +82,9 @@
     },
     "build-index.sh": {
       "name": "build-index.sh",
-      "MD5": "84ee7110e4d66682adcb3d9418c116d3",
-      "hash": "c93e058f06c15eb54efc8465f38bcd09fe374071",
-      "size": 1561,
-      "compressedHash": null,
-      "compressedSize": 0
-    },
-    "index.json": {
-      "name": "index.json",
-      "MD5": "bbb7da61eb673e493fb267c0cab00140",
-      "hash": "175065a204580eedfd8166b86c6b6cd5517c0917",
-      "size": 3871,
+      "MD5": "9c7baec02f9a111ccef407a2c89e4dd5",
+      "hash": "e054c5e8e5bf8584ef1aa7f4dd56729e8f7065d6",
+      "size": 1619,
       "compressedHash": null,
       "compressedSize": 0
     },
