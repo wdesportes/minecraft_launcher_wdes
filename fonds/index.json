@@ -1,130 +1,132 @@
 {
-  "fonds/1803014.jpg": {
-    "name": "1803014.jpg",
-    "MD5": "79cbc06786eab8e1fc23c4d549fe8788",
-    "hash": "fc865ac25c51d9826ceb18aafddf25d039229a6f",
-    "size": 420618,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/1803038.jpg": {
-    "name": "1803038.jpg",
-    "MD5": "3b3d4394cf25da2ea7e385c6810c4b33",
-    "hash": "2833c88755e7ed25b2c161c2ca3974408473ce82",
-    "size": 120920,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/336294.png": {
-    "name": "336294.png",
-    "MD5": "cf250260d00d9626375f0cabea5f9904",
-    "hash": "68419e44f1f395f2e0ffa150d55c9159e7fc37db",
-    "size": 492662,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/336295.png": {
-    "name": "336295.png",
-    "MD5": "090e67f1c05cbbdad88eecdca7989be6",
-    "hash": "22c35b25a92745e1ff0ea265a570ce8d8e922aef",
-    "size": 637762,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/336296.jpg": {
-    "name": "336296.jpg",
-    "MD5": "50d0ee1c8588130eec64d95bf7add36b",
-    "hash": "0b538884f1f0eb07255f5991006d78a72870f8b4",
-    "size": 129161,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/336299.jpg": {
-    "name": "336299.jpg",
-    "MD5": "84376c231afdf927f1d6f4b45a710e3b",
-    "hash": "8404d0874fb6e866abea0905e87051e14ceeb057",
-    "size": 342117,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/336300.jpg": {
-    "name": "336300.jpg",
-    "MD5": "c79bd481d9c6da20765032fe481e18d2",
-    "hash": "04f17147b4d1f9d670dea4ed39ed42468992cf3d",
-    "size": 629310,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/929u.png": {
-    "name": "929u.png",
-    "MD5": "3c89546810411868f7de93f1300e271f",
-    "hash": "1e6cedabaf2f8fa764aa2f2a6a6d7db132f3b76b",
-    "size": 2909872,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/background.png": {
-    "name": "background.png",
-    "MD5": "03bad1c7c823bd7562bd8a438bcf534c",
-    "hash": "b4a674893345fdb7074934e3582ce6a4b2b43583",
-    "size": 432404,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/bg.png": {
-    "name": "bg.png",
-    "MD5": "a397ea2c973a84278c54c426b101988b",
-    "hash": "fa10173032eb660668322c6389e46bbafc1b3d90",
-    "size": 473409,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/build-index.sh": {
-    "name": "build-index.sh",
-    "MD5": "30131742af9582918cfe46142b80be1e",
-    "hash": "198c3f60522d975d9e986bbb8937be1101a8b5f7",
-    "size": 1552,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/index.json": {
-    "name": "index.json",
-    "MD5": "d7d445de66d61a306a83f773dbfc635a",
-    "hash": "4bb7814670ebf41b997aacd6c9aecd48f35e186e",
-    "size": 6,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/news1.png": {
-    "name": "news1.png",
-    "MD5": "03bad1c7c823bd7562bd8a438bcf534c",
-    "hash": "b4a674893345fdb7074934e3582ce6a4b2b43583",
-    "size": 432404,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/slider1.png": {
-    "name": "slider1.png",
-    "MD5": "ae384fb95f206eb5f0413df63bf9d378",
-    "hash": "e71c16e8d911526612244218cabfb95f98849982",
-    "size": 1177583,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/slider2.png": {
-    "name": "slider2.png",
-    "MD5": "b63b090c822484abd55949a85bf003c3",
-    "hash": "5ff5832e3fefa22a0a10e83532db8561fb1077ce",
-    "size": 556074,
-    "compressedHash": null,
-    "compressedSize": 0
-  },
-  "fonds/slider3.png": {
-    "name": "slider3.png",
-    "MD5": "68e52590b5344a67a880f68dcc8f3ec5",
-    "hash": "b60a77c7122407e657fb5809fa18fd7b6725b71c",
-    "size": 1098347,
-    "compressedHash": null,
-    "compressedSize": 0
+  "fonds": {
+    "1803014.jpg": {
+      "name": "1803014.jpg",
+      "MD5": "79cbc06786eab8e1fc23c4d549fe8788",
+      "hash": "fc865ac25c51d9826ceb18aafddf25d039229a6f",
+      "size": 420618,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "1803038.jpg": {
+      "name": "1803038.jpg",
+      "MD5": "3b3d4394cf25da2ea7e385c6810c4b33",
+      "hash": "2833c88755e7ed25b2c161c2ca3974408473ce82",
+      "size": 120920,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "336294.png": {
+      "name": "336294.png",
+      "MD5": "cf250260d00d9626375f0cabea5f9904",
+      "hash": "68419e44f1f395f2e0ffa150d55c9159e7fc37db",
+      "size": 492662,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "336295.png": {
+      "name": "336295.png",
+      "MD5": "090e67f1c05cbbdad88eecdca7989be6",
+      "hash": "22c35b25a92745e1ff0ea265a570ce8d8e922aef",
+      "size": 637762,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "336296.jpg": {
+      "name": "336296.jpg",
+      "MD5": "50d0ee1c8588130eec64d95bf7add36b",
+      "hash": "0b538884f1f0eb07255f5991006d78a72870f8b4",
+      "size": 129161,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "336299.jpg": {
+      "name": "336299.jpg",
+      "MD5": "84376c231afdf927f1d6f4b45a710e3b",
+      "hash": "8404d0874fb6e866abea0905e87051e14ceeb057",
+      "size": 342117,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "336300.jpg": {
+      "name": "336300.jpg",
+      "MD5": "c79bd481d9c6da20765032fe481e18d2",
+      "hash": "04f17147b4d1f9d670dea4ed39ed42468992cf3d",
+      "size": 629310,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "929u.png": {
+      "name": "929u.png",
+      "MD5": "3c89546810411868f7de93f1300e271f",
+      "hash": "1e6cedabaf2f8fa764aa2f2a6a6d7db132f3b76b",
+      "size": 2909872,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "background.png": {
+      "name": "background.png",
+      "MD5": "03bad1c7c823bd7562bd8a438bcf534c",
+      "hash": "b4a674893345fdb7074934e3582ce6a4b2b43583",
+      "size": 432404,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "bg.png": {
+      "name": "bg.png",
+      "MD5": "a397ea2c973a84278c54c426b101988b",
+      "hash": "fa10173032eb660668322c6389e46bbafc1b3d90",
+      "size": 473409,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "build-index.sh": {
+      "name": "build-index.sh",
+      "MD5": "84ee7110e4d66682adcb3d9418c116d3",
+      "hash": "c93e058f06c15eb54efc8465f38bcd09fe374071",
+      "size": 1561,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "index.json": {
+      "name": "index.json",
+      "MD5": "bbb7da61eb673e493fb267c0cab00140",
+      "hash": "175065a204580eedfd8166b86c6b6cd5517c0917",
+      "size": 3871,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "news1.png": {
+      "name": "news1.png",
+      "MD5": "03bad1c7c823bd7562bd8a438bcf534c",
+      "hash": "b4a674893345fdb7074934e3582ce6a4b2b43583",
+      "size": 432404,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "slider1.png": {
+      "name": "slider1.png",
+      "MD5": "ae384fb95f206eb5f0413df63bf9d378",
+      "hash": "e71c16e8d911526612244218cabfb95f98849982",
+      "size": 1177583,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "slider2.png": {
+      "name": "slider2.png",
+      "MD5": "b63b090c822484abd55949a85bf003c3",
+      "hash": "5ff5832e3fefa22a0a10e83532db8561fb1077ce",
+      "size": 556074,
+      "compressedHash": null,
+      "compressedSize": 0
+    },
+    "slider3.png": {
+      "name": "slider3.png",
+      "MD5": "68e52590b5344a67a880f68dcc8f3ec5",
+      "hash": "b60a77c7122407e657fb5809fa18fd7b6725b71c",
+      "size": 1098347,
+      "compressedHash": null,
+      "compressedSize": 0
+    }
   }
 }

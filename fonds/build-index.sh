@@ -35,8 +35,8 @@ echo "Indexing files in: $DIR"
 result='{}'
 
 while IFS= read -r -d '' file; do
-  key="${file#$DIR/}"
   name="$(basename "$file")"
+  key="$name"
   size=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file")
   hash=$(sha1 "$file")
   md5val=$(md5 "$file")
@@ -62,7 +62,7 @@ while IFS= read -r -d '' file; do
 
 done < <(find "$DIR" -type f -print0 | sort -z)
 
-echo "$result" > "$OUT"
+jq '{ fonds: . }' <<< "$result" > "$OUT"
 
 COUNT=$(jq 'length' "$OUT")
 echo "Done. $COUNT file(s) written to $OUT"
