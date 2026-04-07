@@ -313,7 +313,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
         if(auth == null || auth.getSelectedProfile() == null)
             processLauncher.addCommands(new String[] { "--demo" });
 
-        if(selectedProfile.getResolution() != null) {
+        if(selectedProfile.getResolution() != null && Launcher.getInstance().config != null) {
             processLauncher.addCommands(new String[] { "--width", String.valueOf(Launcher.getInstance().config.width) });
             processLauncher.addCommands(new String[] { "--height", String.valueOf(Launcher.getInstance().config.height) });
         }
