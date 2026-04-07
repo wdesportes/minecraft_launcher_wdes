@@ -43,8 +43,6 @@ public class AssetIndex
 	
 	  protected long size;
 	
-	  protected boolean reconstruct;
-	
 	  protected String compressedHash;
 	
 	  protected long compressedSize;
@@ -59,11 +57,6 @@ public class AssetIndex
     public long getSize()
     {
       return this.size;
-    }
-    
-    public boolean shouldReconstruct()
-    {
-      return this.reconstruct;
     }
     
     public boolean hasCompressedAlternative()
@@ -93,9 +86,6 @@ public class AssetIndex
       if (this.compressedSize != that.compressedSize) {
         return false;
       }
-      if (this.reconstruct != that.reconstruct) {
-        return false;
-      }
       if (this.size != that.size) {
         return false;
       }
@@ -112,7 +102,6 @@ public class AssetIndex
     {
       int result = this.hash != null ? this.hash.hashCode() : 0;
       result = 31 * result + (int)(this.size ^ this.size >>> 32);
-      result = 31 * result + (this.reconstruct ? 1 : 0);
       result = 31 * result + (this.compressedHash != null ? this.compressedHash.hashCode() : 0);
       result = 31 * result + (int)(this.compressedSize ^ this.compressedSize >>> 32);
       return result;
