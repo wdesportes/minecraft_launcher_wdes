@@ -188,7 +188,7 @@ public class VersionManager {
       //File indexFile = new File(dossier_fonds,  "fonds.json");
            try
       {
-        URL indexUrl = new URL(LauncherConstants.URL_FONDS_DOWNLOAD+"fonds.php");
+        URL indexUrl = new URL(LauncherConstants.URL_FONDS_DOWNLOAD);
         Http.performGet(indexUrl, proxy);
    
         String json = Http.performGet(indexUrl, proxy);
