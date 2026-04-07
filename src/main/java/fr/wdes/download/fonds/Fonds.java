@@ -42,8 +42,6 @@ public class Fonds
 	  
 	  protected String hash;
 	  
-	  protected boolean reconstruct;
-	  
 	  protected String compressedHash;
 	  
 	  protected long compressedSize;
@@ -70,11 +68,6 @@ public class Fonds
     public long getSize()
     {
       return this.size;
-    }
-    
-    public boolean shouldReconstruct()
-    {
-      return this.reconstruct;
     }
     
     public boolean hasCompressedAlternative()
@@ -104,9 +97,6 @@ public class Fonds
       if (this.compressedSize != that.compressedSize) {
         return false;
       }
-      if (this.reconstruct != that.reconstruct) {
-        return false;
-      }
       if (this.size != that.size) {
         return false;
       }
@@ -123,7 +113,6 @@ public class Fonds
     {
       int result = this.hash != null ? this.hash.hashCode() : 0;
       result = 31 * result + (int)(this.size ^ this.size >>> 32);
-      result = 31 * result + (this.reconstruct ? 1 : 0);
       result = 31 * result + (this.compressedHash != null ? this.compressedHash.hashCode() : 0);
       result = 31 * result + (int)(this.compressedSize ^ this.compressedSize >>> 32);
       return result;
