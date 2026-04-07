@@ -24,21 +24,6 @@ jobs:
           java-version: "8"
           cache: maven
 
-      # guava:r05 is a pre-Maven-Central artifact not hosted on Central.
-      # We install it manually into the local repo so Maven can resolve it.
-      - name: Install guava r05 into local Maven repo
-        run: |
-          curl -fsSL \
-            "https://repo1.maven.org/maven2/com/google/guava/guava/r05/guava-r05.jar" \
-            -o guava-r05.jar
-          mvn install:install-file \
-            -Dfile=guava-r05.jar \
-            -DgroupId=com.google.guava \
-            -DartifactId=guava \
-            -Dversion=r05 \
-            -Dpackaging=jar \
-            -q
-
       # maven-assembly-plugin is bound to the package phase and produces
       # target/wdes-launcher-1.0.1-jar-with-dependencies.jar
       - name: Build with Maven
