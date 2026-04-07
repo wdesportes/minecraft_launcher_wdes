@@ -16,96 +16,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # pom.xml targets Java 8-era dependencies; Temurin 8 is the safest match.
       - name: Set up Java 8
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "8"
+          cache: maven
 
-      - name: Download commons-codec-1.10.jar
-        run: |
-          mkdir -p lib
-          curl -fsSL \
-            "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.10/commons-codec-1.10.jar" \
-            -o lib/commons-codec-1.10.jar
-
-      # org.jar is org.json — confirmed by the NoClassDefFoundError at runtime.
-      - name: Download org.json (org.jar)
+      # guava:r05 is a pre-Maven-Central artifact not hosted on Central.
+      # We install it manually into the local repo so Maven can resolve it.
+      - name: Install guava r05 into local Maven repo
         run: |
           curl -fsSL \
-            "https://repo1.maven.org/maven2/org/json/json/20140107/json-20140107.jar" \
-            -o lib/org.jar
+            "https://repo1.maven.org/maven2/com/google/guava/guava/r05/guava-r05.jar" \
+            -o guava-r05.jar
+          mvn install:install-file \
+            -Dfile=guava-r05.jar \
+            -DgroupId=com.google.guava \
+            -DartifactId=guava \
+            -Dversion=r05 \
+            -Dpackaging=jar \
+            -q
 
-      - name: Compile Java sources
+      # maven-assembly-plugin is bound to the package phase and produces
+      # target/wdes-launcher-1.0.1-jar-with-dependencies.jar
+      - name: Build with Maven
+        run: mvn --batch-mode --no-transfer-progress package
+
+      - name: Rename artifact
         run: |
-          mkdir -p build/classes
-          find . -name "*.java" -not -path "./.git/*" > sources.txt
-          echo "=== Sources found ==="
-          cat sources.txt
-          javac \
-            -source 8 -target 8 \
-            -encoding UTF-8 \
-            -cp "lib/commons-codec-1.10.jar:lib/org.jar" \
-            -d build/classes \
-            @sources.txt
-
-      # Eclipse automatically copies non-.java files into the output directory.
-      # The repo also contains committed .class files — we must exclude them so
-      # they don't overwrite the freshly compiled ones in build/classes.
-      - name: Copy resources
-        run: |
-          find . -type f \
-            -not -name "*.java" \
-            -not -name "*.class" \
-            -not -path "./.git/*" \
-            -not -path "./lib/*" \
-            -not -path "./build/*" \
-            -not -path "./.classpath" \
-            -not -path "./.project" \
-          | while read f; do
-              dest="build/classes/${f#./}"
-              mkdir -p "$(dirname "$dest")"
-              cp "$f" "$dest"
-            done
-          echo "=== Resources copied ==="
-          find build/classes -not -name "*.class" -type f
-
-      - name: Detect main class
-        id: mainclass
-        run: |
-          MAIN=$(grep -rl "public static void main" . \
-                   --include="*.java" \
-                 | head -1 \
-                 | sed 's|^\./||; s|\.java$||; s|/|.|g')
-          if [ -z "$MAIN" ]; then
-            MAIN="wdes.fr.Main"
-            echo "::warning::Could not detect main class; defaulting to $MAIN"
-          fi
-          echo "Detected main class: $MAIN"
-          echo "main=$MAIN" >> "$GITHUB_OUTPUT"
-
-      - name: Build fat launcher.jar
-        run: |
-          # Unpack dependencies so the JAR is fully self-contained (replicates
-          # Eclipse's "Export → Runnable JAR → Extract required libraries").
-          cd build/classes
-          jar xf ../../lib/commons-codec-1.10.jar
-          jar xf ../../lib/org.jar
-          rm -rf META-INF/MANIFEST.MF META-INF/*.SF META-INF/*.DSA META-INF/*.RSA
-          cd ../..
-
-          printf "Manifest-Version: 1.0\nMain-Class: ${{ steps.mainclass.outputs.main }}\n" \
-            > build/MANIFEST.MF
-
-          jar cfm build/launcher.jar build/MANIFEST.MF -C build/classes .
-
-          echo "=== JAR contents ==="
-          jar tf build/launcher.jar | head -60
+          mv target/wdes-launcher-*-jar-with-dependencies.jar target/launcher.jar
 
       - name: Upload launcher.jar
         uses: actions/upload-artifact@v7
         with:
           name: launcher-jar
-          path: build/launcher.jar
+          path: target/launcher.jar
           retention-days: 30
           archive: false
