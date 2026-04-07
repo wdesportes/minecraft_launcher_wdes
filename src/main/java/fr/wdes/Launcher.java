@@ -155,8 +155,9 @@ public class Launcher {
         LOGGER.addHandler(conHdlr);
         //this.downloaderExecutorService.allowCoreThreadTimeOut(true);
         Gson gson = new Gson() ;
+        String configUrl = LauncherConstants.URL_CONFIGS+this.uuid+".conf";
         try {
-			config = gson.fromJson(Http.performGet(new URL(LauncherConstants.URL_CONFIGS+this.uuid+".conf"), proxy),JObjectContainer.class) ;
+			config = gson.fromJson(Http.performGet(new URL(configUrl), proxy),JObjectContainer.class) ;
 			logger.info("UUID Distant : "+config.uuid+" UUID Local : "+this.uuid);
 			if(config.forge){
 				LauncherConstants.URL_VERSION_LIST = "http://download.wdeslaunchers.wdes.fr/";
@@ -181,6 +182,18 @@ public class Launcher {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		if (config == null) {
+        	JOptionPane.showMessageDialog(
+                frame,
+                "Impossible de récupérer la config depuis " + configUrl,
+                "[WdesLaunchers] Erreur",
+                JOptionPane.ERROR_MESSAGE
+            );
+            logger.warn("Impossible de récupérer la config depuis " + configUrl);
+            System.exit(1);
+		}
+
         final File workdir = Utilis.getWorkingDirectory();
         if(workdir.exists() && !workdir.isDirectory())
         	JOptionPane.showMessageDialog(frame,
@@ -208,7 +221,7 @@ public class Launcher {
 
         } catch ( Exception e ) {
           System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-          System.exit(0);
+          System.exit(1);
         }
         System.out.println("Opened database successfully");
 
