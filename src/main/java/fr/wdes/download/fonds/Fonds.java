@@ -15,6 +15,11 @@ public class Fonds
     this.fonds = new LinkedHashMap<String, Fond>();
   }
 
+  public int count()
+  {
+    return this.fonds.size();
+  }
+
   public Map<String, Fond> getFileMap()
   {
     return this.fonds;

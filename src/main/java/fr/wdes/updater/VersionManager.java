@@ -195,7 +195,8 @@ public class VersionManager {
         //FileUtils.writeStringToFile(indexFile, json);
 
         Fonds index = (Fonds)this.gson.fromJson(json, Fonds.class);
-        logger.info("Traitement des fonds.");
+        logger.info("Traitement des fonds (" + index.count()  + ").");
+
         for (Map.Entry<Fonds.Fond, String> entry : index.getUniqueObjects().entrySet())
         {
 
@@ -206,9 +207,13 @@ public class VersionManager {
           //logger.info("Téléchargement de : "+filename +"=======>"+emplacement.getAbsolutePath());
           if ((!emplacement.isFile()) || (FileUtils.sizeOf(emplacement) != object.getSize()))
           {
-            Downloadable downloadable = new BackgroundDownloadable(proxy, (String)entry.getValue(), object, LauncherConstants.URL_FONDS_DOWNLOAD+filename, emplacement);
+            String fondUrl = LauncherConstants.URL_FONDS_DOWNLOAD+filename;
+            logger.info("Le fond " + filename + " (" + fondUrl + ") sera téléchargé.");
+            Downloadable downloadable = new BackgroundDownloadable(proxy, (String)entry.getValue(), object, fondUrl, emplacement);
             downloadable.setExpectedSize(object.getSize());
             result.add(downloadable);
+          } else {
+              logger.info("Le fond " + filename + " est OK.");
           }
         }
         long end = System.nanoTime();
