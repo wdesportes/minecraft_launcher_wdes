@@ -7,21 +7,21 @@ import java.util.Map;
 public class AssetIndex
 {
 	protected static final String DEFAULT_ASSET_NAME = "legacy";
-  
+
   protected Map<String, AssetObject> objects;
-  
+
   protected boolean virtual;
-  
+
   public AssetIndex()
   {
     this.objects = new LinkedHashMap<String, AssetObject>();
   }
-  
+
   public Map<String, AssetObject> getFileMap()
   {
     return this.objects;
   }
-  
+
   public Map<AssetObject, String> getUniqueObjects()
   {
     Map<AssetObject, String> result = Maps.newHashMap();
@@ -30,50 +30,50 @@ public class AssetIndex
     }
     return result;
   }
-  
+
   public boolean isVirtual()
   {
     return this.virtual;
   }
-  
+
   public class AssetObject
   {
-	  
+
 	  protected String hash;
-	
+
 	  protected long size;
-	
+
 	  protected String compressedHash;
-	
+
 	  protected long compressedSize;
-    
+
 	  protected AssetObject() {}
-    
+
 	  public String getHash()
     {
       return this.hash;
     }
-    
+
     public long getSize()
     {
       return this.size;
     }
-    
+
     public boolean hasCompressedAlternative()
     {
       return this.compressedHash != null;
     }
-    
+
     public String getCompressedHash()
     {
       return this.compressedHash;
     }
-    
+
     public long getCompressedSize()
     {
       return this.compressedSize;
     }
-    
+
     public boolean equals(Object o)
     {
       if (this == o) {
@@ -97,7 +97,7 @@ public class AssetIndex
       }
       return true;
     }
-    
+
     public int hashCode()
     {
       int result = this.hash != null ? this.hash.hashCode() : 0;
