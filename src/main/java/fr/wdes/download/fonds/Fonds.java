@@ -9,17 +9,17 @@ public class Fonds
 
   protected Map<String, Fond> fonds;
 
-  
+
   public Fonds()
   {
     this.fonds = new LinkedHashMap<String, Fond>();
   }
-  
+
   public Map<String, Fond> getFileMap()
   {
     return this.fonds;
   }
-  
+
   public Map<Fond, String> getUniqueObjects()
   {
     Map<Fond, String> result = Maps.newHashMap();
@@ -28,63 +28,63 @@ public class Fonds
     }
     return result;
   }
-  
 
-  
+
+
   public class Fond
   {
-	  
+
 	  protected String MD5;
-	  
+
 	  protected String name;
-	  
+
 	  protected long size;
-	  
+
 	  protected String hash;
-	  
+
 	  protected String compressedHash;
-	  
+
 	  protected long compressedSize;
     public Fond() {}
-    
+
     public String getName()
     {
       return this.name;
     }
-    
+
     public String getMD5()
     {
       return this.MD5;
     }
 
-    
+
     public void AssetObject() {}
-    
+
     public String getHash()
     {
       return this.hash;
     }
-    
+
     public long getSize()
     {
       return this.size;
     }
-    
+
     public boolean hasCompressedAlternative()
     {
       return this.compressedHash != null;
     }
-    
+
     public String getCompressedHash()
     {
       return this.compressedHash;
     }
-    
+
     public long getCompressedSize()
     {
       return this.compressedSize;
     }
-    
+
     public boolean equals(Object o)
     {
       if (this == o) {
@@ -108,7 +108,7 @@ public class Fonds
       }
       return true;
     }
-    
+
     public int hashCode()
     {
       int result = this.hash != null ? this.hash.hashCode() : 0;
@@ -119,7 +119,7 @@ public class Fonds
     }
 
 
-    
+
 
   }
 }
