@@ -52,7 +52,7 @@ import fr.wdes.updater.VersionManager;
 
 
 public class Launcher {
-	public final Logger LOGGER = Logger.getLogger("Wdes"); 
+	public final Logger LOGGER = Logger.getLogger("Wdes");
 	private static Launcher instance;
 	private static final List<String> delayedSysout = new ArrayList<String>();
     public static Launcher getInstance() {
@@ -62,7 +62,7 @@ public class Launcher {
     private static void setLookAndFeel() {
         final JFrame frame = new JFrame();
         frame.setUndecorated(true);
-        
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
@@ -79,7 +79,7 @@ public class Launcher {
         final JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createTitledBorder("test"));
         frame.add(panel);
-        
+
         try {
             frame.pack();
         }
@@ -143,7 +143,7 @@ public class Launcher {
         	          for(final String lines : delayedSysout)
         	              launcherPanel.getTabPanel().getConsole().print(lines);
         	          delayedSysout.clear();
-        	          
+
         	    	  Launcher.getInstance().getLauncherPanel().getTabPanel().getConsole().print(line);
         	      }
 
@@ -151,7 +151,7 @@ public class Launcher {
             return "";
           }
         });
-        
+
         LOGGER.addHandler(conHdlr);
         //this.downloaderExecutorService.allowCoreThreadTimeOut(true);
         Gson gson = new Gson() ;
@@ -193,7 +193,7 @@ public class Launcher {
         			"Création du dossier impossible : "+workdir.toString()+" C'est peut être un emplacement protégé ?? Allez Googler \"chmod dossier \"",
     			    "[WdesLaunchers] Erreur",
     			    JOptionPane.ERROR_MESSAGE);
-        
+
         this.workingDirectory = workdir;
         this.sqlitedb = new File(this.workingDirectory,"wdeslaunchers.db");
         /** *SQLITE DB*  */
@@ -205,15 +205,15 @@ public class Launcher {
           System.out.println("Driver version: " + dm.getDriverVersion());
           System.out.println("Product name: " + dm.getDatabaseProductName());
           System.out.println("Product version: " + dm.getDatabaseProductVersion());
-          
+
         } catch ( Exception e ) {
           System.err.println( e.getClass().getName() + ": " + e.getMessage() );
           System.exit(0);
         }
         System.out.println("Opened database successfully");
-      
+
         try {
-        	
+
         	logger.info("WdesLaunchers DB : "+this.sqlitedb.toPath());
             statement = db.createStatement();
 
@@ -226,9 +226,9 @@ public class Launcher {
         } catch ( SQLException e) {
             e.printStackTrace();
         }
-        
+
         /** *SQLITE DB*  */
-  
+
         logger.info("Launcher WdesLauncher v (1.0) started on " + OperatingSystem.getCurrentPlatform().getName() + "...");
         logger.info("Current time is " + DateFormat.getDateTimeInstance(2, 2, Locale.FRANCE).format(new Date()));
         if(!OperatingSystem.getCurrentPlatform().isSupported())
@@ -239,21 +239,21 @@ public class Launcher {
         logger.info("System.getProperty('java.version') == '" + System.getProperty("java.version") + "'");
         logger.info("System.getProperty('java.vendor') == '" + System.getProperty("java.vendor") + "'");
         logger.info("System.getProperty('sun.arch.data.model') == '" + System.getProperty("sun.arch.data.model") + "'");
-        
+
         gameLauncher = new GameLauncher(this);
         profileManager = new ProfileManager(this);
         versionManager = new VersionManager(new LocalVersionList(LauncherConstants.URL_RESOURCE_BASE,this.workingDirectory), new RemoteVersionList(LauncherConstants.URL_RESOURCE_BASE,proxy));
         launcherPanel = new LauncherPanel(this);
         initializeFrame();
 
- /*       
+ /*
         if(bootstrapVersion.intValue() < 4) {
             showOutdatedNotice();
             return;
         }
-	   
+
         downloadResources(); */
-        
+
         refreshVersionsAndProfiles();
         Telechargment_fonds();
     }
@@ -323,9 +323,9 @@ public class Launcher {
                 }
                 catch(final AuthenticationException e) {
                 	e.printStackTrace();
-                
+
                 }
-         
+
         }
         else if(!auth.canPlayOnline())
             try {
@@ -405,7 +405,7 @@ public class Launcher {
         //Bottom bar : 900,580 IDF: 900,507
         //frame.setPreferredSize(new Dimension(900, 507));
         frame.setDefaultCloseOperation(2);
-        
+
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(final WindowEvent e) {
@@ -422,7 +422,7 @@ public class Launcher {
         catch(final IOException localIOException) {
         }
         frame.add(launcherPanel);
-        
+
         frame.pack();
         frame.setVisible(true);
     }
@@ -432,7 +432,7 @@ public class Launcher {
 
 
     public void refreshVersionsAndProfiles() {
-    	
+
         versionManager.getExecutorService().submit(new Runnable() {
             public void run() {
                 try {
