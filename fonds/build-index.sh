@@ -41,7 +41,7 @@ while IFS= read -r -d '' file; do
    continue
   fi
 
-  key="$name"
+  key="${file#"$DIR"}"
   size=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file")
   hash=$(sha1 "$file")
   md5val=$(md5 "$file")

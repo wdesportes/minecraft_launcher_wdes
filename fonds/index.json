@@ -1,6 +1,6 @@
 {
   "fonds": {
-    "1803014.jpg": {
+    "jour/1803014.jpg": {
       "name": "1803014.jpg",
       "MD5": "79cbc06786eab8e1fc23c4d549fe8788",
       "hash": "fc865ac25c51d9826ceb18aafddf25d039229a6f",
@@ -8,7 +8,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "1803038.jpg": {
+    "jour/1803038.jpg": {
       "name": "1803038.jpg",
       "MD5": "3b3d4394cf25da2ea7e385c6810c4b33",
       "hash": "2833c88755e7ed25b2c161c2ca3974408473ce82",
@@ -16,7 +16,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "336294.png": {
+    "jour/336294.png": {
       "name": "336294.png",
       "MD5": "cf250260d00d9626375f0cabea5f9904",
       "hash": "68419e44f1f395f2e0ffa150d55c9159e7fc37db",
@@ -24,7 +24,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "336295.png": {
+    "jour/336295.png": {
       "name": "336295.png",
       "MD5": "090e67f1c05cbbdad88eecdca7989be6",
       "hash": "22c35b25a92745e1ff0ea265a570ce8d8e922aef",
@@ -32,7 +32,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "336296.jpg": {
+    "jour/336296.jpg": {
       "name": "336296.jpg",
       "MD5": "50d0ee1c8588130eec64d95bf7add36b",
       "hash": "0b538884f1f0eb07255f5991006d78a72870f8b4",
@@ -40,7 +40,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "336299.jpg": {
+    "jour/336299.jpg": {
       "name": "336299.jpg",
       "MD5": "84376c231afdf927f1d6f4b45a710e3b",
       "hash": "8404d0874fb6e866abea0905e87051e14ceeb057",
@@ -48,7 +48,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "336300.jpg": {
+    "jour/336300.jpg": {
       "name": "336300.jpg",
       "MD5": "c79bd481d9c6da20765032fe481e18d2",
       "hash": "04f17147b4d1f9d670dea4ed39ed42468992cf3d",
@@ -56,7 +56,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "929u.png": {
+    "jour/929u.png": {
       "name": "929u.png",
       "MD5": "3c89546810411868f7de93f1300e271f",
       "hash": "1e6cedabaf2f8fa764aa2f2a6a6d7db132f3b76b",
@@ -64,7 +64,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "background.png": {
+    "jour/background.png": {
       "name": "background.png",
       "MD5": "03bad1c7c823bd7562bd8a438bcf534c",
       "hash": "b4a674893345fdb7074934e3582ce6a4b2b43583",
@@ -72,7 +72,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "bg.png": {
+    "jour/bg.png": {
       "name": "bg.png",
       "MD5": "a397ea2c973a84278c54c426b101988b",
       "hash": "fa10173032eb660668322c6389e46bbafc1b3d90",
@@ -80,7 +80,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "news1.png": {
+    "jour/news1.png": {
       "name": "news1.png",
       "MD5": "03bad1c7c823bd7562bd8a438bcf534c",
       "hash": "b4a674893345fdb7074934e3582ce6a4b2b43583",
@@ -88,7 +88,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "slider1.png": {
+    "jour/slider1.png": {
       "name": "slider1.png",
       "MD5": "ae384fb95f206eb5f0413df63bf9d378",
       "hash": "e71c16e8d911526612244218cabfb95f98849982",
@@ -96,7 +96,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "slider2.png": {
+    "jour/slider2.png": {
       "name": "slider2.png",
       "MD5": "b63b090c822484abd55949a85bf003c3",
       "hash": "5ff5832e3fefa22a0a10e83532db8561fb1077ce",
@@ -104,7 +104,7 @@
       "compressedHash": null,
       "compressedSize": 0
     },
-    "slider3.png": {
+    "jour/slider3.png": {
       "name": "slider3.png",
       "MD5": "68e52590b5344a67a880f68dcc8f3ec5",
       "hash": "b60a77c7122407e657fb5809fa18fd7b6725b71c",
