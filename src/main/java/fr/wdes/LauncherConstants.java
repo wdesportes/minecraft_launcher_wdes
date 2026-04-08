@@ -28,7 +28,6 @@ I8,        8        ,8I         88                            88                
     public static final String URL_DOWNLOAD_INDEXES_BASE      = "http://wdeslaunchers.wdes.fr/";// indexes/{indexName}.json
     public static final String URL_ASSETS_DOWNLOAD_BASE       = "https://resources.download.minecraft.net/";// {hash[0:2]}/{hash}
     public static final String URL_LOGO_BASE         = "http://wdeslaunchers.wdes.fr/";// logos/{uuid}.png
-    public static final String URL_STATUS_CHECKER    = Launcher.getInstance().config.URL_STATUS_CHECKER;
     public static final String URL_FONDS_DOWNLOAD    = Launcher.getInstance().config.URL_FONDS_DOWNLOAD;
     public static final String PLACEHOLDER_LOGIN             = Launcher.getInstance().config.PLACEHOLDER_LOGIN;
     public static final String PLACEHOLDER_PASSD             = Launcher.getInstance().config.PLACEHOLDER_PASSD;
