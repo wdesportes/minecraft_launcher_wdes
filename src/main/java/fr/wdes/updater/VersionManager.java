@@ -185,17 +185,15 @@ public class VersionManager {
     	logger.info("Téléchargement des fonds en cours");
       Set<Downloadable> result = new HashSet<Downloadable>();
       InputStream inputStream = null;
-      //File dossier_fonds = new File(Launcher.getInstance().getWorkingDirectory(), "fonds");
+      File dossier_fonds = new File(Launcher.getInstance().getWorkingDirectory(), "fonds");
       long start = System.nanoTime();
 
-      //File indexFile = new File(dossier_fonds,  "fonds.json");
            try
       {
         URL indexUrl = new URL(LauncherConstants.URL_FONDS_DOWNLOAD+"index.json");
         Http.performGet(indexUrl, proxy);
 
         String json = Http.performGet(indexUrl, proxy);
-        //FileUtils.writeStringToFile(indexFile, json);
 
         Fonds index = (Fonds)this.gson.fromJson(json, Fonds.class);
         logger.info("Traitement des fonds (" + index.count()  + ").");
@@ -205,8 +203,7 @@ public class VersionManager {
 
         	Fonds.Fond object = (Fonds.Fond)entry.getKey();
           String filename = object.getName();
-          //File file = new File(dossier_fonds, filename);
-          File emplacement = new File(Launcher.getInstance().getWorkingDirectory(),filename);
+          File emplacement = new File(dossier_fonds, filename);
           //logger.info("Téléchargement de : "+filename +"=======>"+emplacement.getAbsolutePath());
           if ((!emplacement.isFile()) || (FileUtils.sizeOf(emplacement) != object.getSize()))
           {
