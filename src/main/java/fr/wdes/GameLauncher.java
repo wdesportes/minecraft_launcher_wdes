@@ -401,16 +401,31 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
 
     public void onJavaProcessEnded(final JavaProcess process) {
         final int exitCode = process.getExitCode();
-        // Always dump the captured stdout tail; without this, a Minecraft
-        // process that started and exited within milliseconds leaves no
-        // visible trace in the launcher log so debugging is effectively
-        // impossible.
+        // Always dump everything we know about the exit so a JVM that died
+        // within milliseconds of starting leaves an actually useful trace.
+        logger.info("===== Game JVM exited =====");
+        logger.info("Exit code: " + exitCode);
+        logger.info("Command:   " + process.getStartupCommand());
+        final java.util.List<String> argv = process.getStartupCommands();
+        if (argv != null) {
+            final StringBuilder rebuilt = new StringBuilder();
+            for (int i = 0; i < argv.size(); i++) {
+                if (i > 0) rebuilt.append(' ');
+                rebuilt.append(argv.get(i));
+            }
+            logger.info("Argv:      " + rebuilt.toString());
+        }
         final String[] tail = process.getSysOutLines().getItems();
-        for (int i = 0; i < tail.length; i++) {
-            if (tail[i] != null) {
-                logger.info("[Minecraft tail] " + tail[i]);
+        if (tail.length == 0) {
+            logger.warn("No stdout/stderr captured before JVM exited - typically means the binary couldn't start (wrong java path, ELF/PE mismatch, missing libstdc++, killed by SIGKILL, etc).");
+        } else {
+            for (int i = 0; i < tail.length; i++) {
+                if (tail[i] != null) {
+                    logger.info("[Minecraft tail] " + tail[i]);
+                }
             }
         }
+        logger.info("===========================");
 
         if(exitCode == 0) {
         	launcher.getLauncherPanel().progressBar.setText("[" + exitCode + "] Arrêt du jeu,aucun problème détécté.");
