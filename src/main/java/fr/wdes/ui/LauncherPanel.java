@@ -95,7 +95,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	Font largerMinecraft;
 	JLabel bottomRectangle = new JLabel();
     JLabel logo = new JLabel();
-	JCheckBox remember = new JCheckBox("Retenir");
+	JCheckBox remember = new fr.wdes.ui.lite.LiteCheckBox("Retenir");
     private static final URL minimizeIcon = Launcher.class.getResource("/fr/wdes/ressources/minimize.png");
     private static final URL optionsIcon = Launcher.class.getResource("/fr/wdes/ressources/options.png");
     private static final URL closeIcon = Launcher.class.getResource("/fr/wdes/ressources/close.png");

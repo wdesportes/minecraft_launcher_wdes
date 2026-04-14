@@ -108,7 +108,12 @@ public class BlurUtils {
 	}
 
 	private static BufferedImage ensureBuffer1Capacity(final int width, final int height) {
-		BufferedImage img1 = _buffer1 != null ? _buffer0.get() : null;
+		// Bug fix: this used to read `_buffer0.get()`, which on the second
+		// invocation aliased img1 to the same buffer as img0. ConvolveOp does
+		// not produce a defined result when its source and destination are the
+		// same image, so the horizontal blur pass was corrupted and the visible
+		// Gaussian blur was lost on every blur after the very first one.
+		BufferedImage img1 = _buffer1 != null ? _buffer1.get() : null;
 		img1 = ensureBufferCapacity(width, height, img1);
 		_buffer1 = new SoftReference<BufferedImage>(img1);
 		return img1;
