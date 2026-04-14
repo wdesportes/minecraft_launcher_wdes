@@ -148,6 +148,10 @@ public class ProfileVersionPanel extends JPanel implements RefreshedVersionsList
         constraints.gridy += 1;
 
         versionList.setRenderer(new VersionListRenderer());
+        // Disabled by default; populateVersions() flips it back on once the
+        // remote version list has actually been loaded so users can pick a
+        // version. Without this re-enable the dropdown was permanently
+        // greyed out and there was no way to switch versions.
         versionList.setEnabled(false);
     }
 
@@ -175,6 +179,9 @@ public class ProfileVersionPanel extends JPanel implements RefreshedVersionsList
             versionList.setSelectedIndex(0);
         else
             versionList.setSelectedItem(selected);
+
+        // We finally have something to choose from, let the user pick.
+        versionList.setEnabled(!versions.isEmpty());
     }
 
     public boolean shouldReceiveEventsInUIThread() {
