@@ -12,7 +12,7 @@ import java.awt.Stroke;
 
 import javax.swing.border.AbstractBorder;
 
-class LiteBorder extends AbstractBorder {
+public class LiteBorder extends AbstractBorder {
 	private static final long serialVersionUID = 1L;
 	private final int thickness;
 	private final Color color;
