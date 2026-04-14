@@ -124,6 +124,14 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
     private final AuthenticationService authentication = new YggdrasilAuthenticationService();
 	private final Map<JButton, DynamicButton> removeButtons = new HashMap<JButton, DynamicButton>();
 	protected boolean loggedin = false;
+	/**
+	 * Username we last filled into the login field automatically. While the
+	 * login field still matches it, the password field stays hidden - the
+	 * user is the recognised profile and doesn't need to retype anything.
+	 * As soon as they edit the login text to anything else, the password
+	 * field reappears so they can authenticate as a different user.
+	 */
+	private String autoFilledUsername;
 	List<JBouton> JBoutons = new ArrayList<JBouton>();
     private BackgroundImage CreateHome()
     {
@@ -196,6 +204,14 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
   	       this.logininput.setBackground(new Color(0, 0, 0, 150));
   	       this.logininput.setForeground(Color.LIGHT_GRAY);
 	       this.logininput.setFont(minecraft);
+	       // Hide the password field while the typed login still matches the
+	       // recognised profile; show it again as soon as the user starts
+	       // typing a different name.
+	       this.logininput.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+	           public void changedUpdate(javax.swing.event.DocumentEvent e) { syncPasswordVisibility(); }
+	           public void insertUpdate(javax.swing.event.DocumentEvent e)  { syncPasswordVisibility(); }
+	           public void removeUpdate(javax.swing.event.DocumentEvent e)  { syncPasswordVisibility(); }
+	       });
 
   	       this.passwordinput.setPlaceholder(LauncherConstants.PLACEHOLDER_PASSD);
   	       this.passwordinput.setBounds(FRAME_WIDTH / 2 - 90, 338 + yShift, 180, 24);
@@ -377,6 +393,30 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	}
 
 	private final java.util.Map<String, String> socialUrls = new java.util.HashMap<String, String>();
+
+	/**
+	 * Show or hide the password field based on whether the login text still
+	 * matches the auto-filled username we recognised. While the user is
+	 * still on "their" profile we don't ask them to retype the password and
+	 * leave the play button in place. As soon as they edit the login to a
+	 * different name, surface the password field and the login button (and
+	 * hide the play button) so they can authenticate as someone else.
+	 */
+	private void syncPasswordVisibility() {
+		final boolean recognised = autoFilledUsername != null
+				&& logininput != null
+				&& autoFilledUsername.equals(logininput.getText());
+		if (passwordinput != null) {
+			passwordinput.setVisible(!recognised);
+		}
+		// Only swap the play/login buttons when we actually have a recognised
+		// profile to swap from - otherwise we'd toggle them in the
+		// not-logged-in path too, undoing checkPlayerState's setup.
+		if (autoFilledUsername != null) {
+			if (loginbtn != null) loginbtn.setVisible(!recognised);
+			if (gamebtn  != null) gamebtn.setVisible(recognised);
+		}
+	}
 
 	private static BufferedImage getDefaultImage() {
 		try {
@@ -790,7 +830,10 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
             this.progressBar.setVisible(true);
             this.progressBar.setValue(100);
             this.progressBar.setString("En attente de votre connexion");
-
+            // No recognised profile - always show the password field so the
+            // visitor can sign in.
+            autoFilledUsername = null;
+            syncPasswordVisibility();
         }
         else if(auth.getSelectedProfile() == null) {
             welcomeText.setText("Bienvenue, joueur!");
@@ -804,6 +847,10 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
             this.gamebtn.setEnabled(true);
 
             //this.logoutbtn.setVisible(true);
+            // Remember which name we auto-filled BEFORE setText so the
+            // DocumentListener fired by setText sees a match and hides the
+            // password field straight away.
+            autoFilledUsername = auth.getUsername();
             this.logininput.setText(auth.getUsername());
             this.progressBar.setVisible(false);
 				// Create callable

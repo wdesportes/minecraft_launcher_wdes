@@ -24,20 +24,20 @@ import javax.swing.text.JTextComponent;
  * centre the text - the visible outline is drawn by {@link #paintBackground}
  * so it sits at the same anti-aliased rounded edge as the fill.
  */
-final class StyledFieldUtils {
-	static final Color OUTLINE        = new Color(220, 220, 220, 80);
-	static final Color OUTLINE_FOCUS  = new Color(255, 255, 255, 200);
-	static final Color HIGHLIGHT_TOP  = new Color(255, 255, 255, 70);
-	static final Color HIGHLIGHT_FOCUS = new Color(255, 255, 255, 110);
-	static final Color PLACEHOLDER    = new Color(220, 220, 220, 170);
-	static final int   ARC            = 3;
-	static final int   PAD_X          = 8;
+public final class StyledFieldUtils {
+	public static final Color OUTLINE         = new Color(220, 220, 220, 80);
+	public static final Color OUTLINE_FOCUS   = new Color(255, 255, 255, 200);
+	public static final Color HIGHLIGHT_TOP   = new Color(255, 255, 255, 70);
+	public static final Color HIGHLIGHT_FOCUS = new Color(255, 255, 255, 110);
+	public static final Color PLACEHOLDER     = new Color(220, 220, 220, 170);
+	public static final int   ARC             = 3;
+	public static final int   PAD_X           = 8;
 	private static final int OUTLINE_THICKNESS = 1;
 
 	private StyledFieldUtils() {}
 
 	/** Apply the one-off styling that doesn't depend on size/font. */
-	static void applyBaseStyle(JTextComponent c) {
+	public static void applyBaseStyle(JTextComponent c) {
 		c.setOpaque(false);
 		c.setForeground(Color.WHITE);
 		c.setCaretColor(Color.WHITE);
@@ -52,7 +52,7 @@ final class StyledFieldUtils {
 	 * Falls back to a sane fixed padding when the component hasn't been laid
 	 * out yet.
 	 */
-	static Border buildBorder(JTextComponent c, boolean focused) {
+	public static Border buildBorder(JTextComponent c, boolean focused) {
 		final int padY = computeVerticalPadding(c);
 		return new EmptyBorder(padY, PAD_X, padY, PAD_X);
 	}
@@ -72,7 +72,7 @@ final class StyledFieldUtils {
 	 * top edge and the outline. Call before super.paintComponent so the text
 	 * renders on top.
 	 */
-	static void paintBackground(JTextComponent c, Graphics pG) {
+	public static void paintBackground(JTextComponent c, Graphics pG) {
 		final Graphics2D g = (Graphics2D) pG.create();
 		try {
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -104,7 +104,7 @@ final class StyledFieldUtils {
 	 * left padding as the actual text, so the placeholder lines up with what
 	 * the user types.
 	 */
-	static void paintPlaceholder(JTextComponent c, Graphics pG, String placeholder) {
+	public static void paintPlaceholder(JTextComponent c, Graphics pG, String placeholder) {
 		if (placeholder == null || placeholder.length() == 0) {
 			return;
 		}
