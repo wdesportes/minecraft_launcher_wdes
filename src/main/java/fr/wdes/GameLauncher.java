@@ -113,8 +113,20 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
         final String[] split = version.getMinecraftArguments().split(" ");
         // ----DEBUT V2----
         map.put("auth_access_token", authentication.getSessionToken());
-        map.put("user_properties", new GsonBuilder().registerTypeAdapter(PropertyMap.class, new LegacyPropertyMapSerializer()).create().toJson(authentication.getUserProperties()));
-        map.put("user_property_map", new GsonBuilder().registerTypeAdapter(PropertyMap.class, new PropertyMap.Serializer()).create().toJson(authentication.getUserProperties()));
+        // Minecraft 1.7+ deserialises --userProperties / --userProperty_map
+        // with Gson.fromJson(arg, Map.class) and then immediately calls
+        // entrySet() on the result. If we let Gson.toJson(null) produce the
+        // literal "null" string, the deserialisation returns null and the
+        // game crashes with NullPointerException at Main.main(SourceFile:116).
+        // Always emit an empty JSON object when there are no properties to
+        // ship.
+        final com.google.gson.JsonElement userProps = authentication.getUserProperties();
+        map.put("user_properties", userProps == null
+            ? "{}"
+            : new GsonBuilder().registerTypeAdapter(PropertyMap.class, new LegacyPropertyMapSerializer()).create().toJson(userProps));
+        map.put("user_property_map", userProps == null
+            ? "{}"
+            : new GsonBuilder().registerTypeAdapter(PropertyMap.class, new PropertyMap.Serializer()).create().toJson(userProps));
         // ----FIN   V2----
 
         //DEBUT V1
