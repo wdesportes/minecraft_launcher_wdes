@@ -40,6 +40,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import org.apache.commons.io.IOUtils;
 
@@ -51,8 +52,12 @@ import fr.wdes.Launcher;
 
 public class BackgroundImage extends JLabel {
 	private static final long serialVersionUID = 1L;
+	private final int width;
+	private final int height;
 
 	public BackgroundImage(int width, int height) {
+		this.width = width;
+		this.height = height;
 		setVerticalAlignment(SwingConstants.CENTER);
 		setHorizontalAlignment(SwingConstants.CENTER);
 		setBounds(0, 0, width, height);
@@ -60,6 +65,26 @@ public class BackgroundImage extends JLabel {
 		setIcon(new ImageIcon(getBackgroundImage().getScaledInstance(width, height, Image.SCALE_SMOOTH)));
 		setVerticalAlignment(SwingConstants.TOP);
 		setHorizontalAlignment(SwingConstants.LEFT);
+	}
+
+	/**
+	 * Re-reads the fonds directory and updates the displayed background.
+	 * Safe to call from any thread; image loading and Gaussian blur run off
+	 * the EDT and the icon swap is dispatched back to the EDT.
+	 */
+	public void refresh() {
+		new Thread(new Runnable() {
+			public void run() {
+				final BufferedImage img = getBackgroundImage();
+				final Image scaled = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						setIcon(new ImageIcon(scaled));
+						repaint();
+					}
+				});
+			}
+		}, "BackgroundRefresh").start();
 	}
 
 	private BufferedImage getBackgroundImage() {

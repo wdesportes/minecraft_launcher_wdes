@@ -436,7 +436,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
             	connection = Http.performHead(url, Launcher.getInstance().getProxy(),"If-None-Match", ETAG);
              }
 
-        	if(connection.getResponseCode() == 304 && count == 1){
+        	if(connection.getResponseCode() == 304 && count > 0){
         		logger.info("Avatar Téléchargé depuis la base de données etag : "+connection.getHeaderField("Etag")+"!!");
         		InputStream in = new ByteArrayInputStream(AVATAR);
         		image = ImageIO.read(in);
@@ -444,11 +444,24 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
                 // image=Toolkit.getDefaultToolkit().createImage(imgArr);
         	}
         	else if(connection.getResponseCode() == 200){
+        		if(count > 0){
+        			// HEAD has no body; re-open as GET to actually fetch the new avatar.
+        			// Mirrors getLogo() below.
+        			connection = (HttpURLConnection) url.openConnection();
+        		}
         		logger.info("Avatar Téléchargé !!");
         		InputStream stream = new BufferedInputStream(connection.getInputStream());
 			      image = ImageIO.read(stream);
 					if (image == null) {
 						throw new NullPointerException("No avatar helm downloaded!");
+					}
+
+					if(count > 0){
+						String deleteSql = "DELETE FROM Users WHERE USERNAME='" + user + "';";
+						PreparedStatement deleteStatement = Launcher.getInstance().db.prepareStatement(deleteSql);
+						deleteStatement.executeUpdate();
+						deleteStatement.close();
+						logger.info("Avatar Effacé !!");
 					}
 
 					String sql = "INSERT INTO Users (ID,USERNAME,ETAG,AVATAR) " +"VALUES (NULL,'" + user + "', '"+connection.getHeaderField("Etag")+"', ? );";

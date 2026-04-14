@@ -301,7 +301,23 @@ public class Launcher {
     }
 */
     private void Telechargment_fonds() {
-        final DownloadJob job = new DownloadJob("Fonds du Launcher", true, gameLauncher);
+        // Wrap gameLauncher so we get notified when the fonds download finishes
+        // and can refresh the BackgroundImage. The image is loaded once when
+        // LauncherPanel is constructed (before this method runs), so without
+        // a refresh the launcher keeps showing the bundled default until the
+        // next session.
+        final fr.wdes.download.DownloadListener wrapped = new fr.wdes.download.DownloadListener() {
+            public void onDownloadJobFinished(final DownloadJob finished) {
+                gameLauncher.onDownloadJobFinished(finished);
+                if(launcherPanel != null && launcherPanel.launcherhome != null) {
+                    launcherPanel.launcherhome.refresh();
+                }
+            }
+            public void onDownloadJobProgressChanged(final DownloadJob changed) {
+                gameLauncher.onDownloadJobProgressChanged(changed);
+            }
+        };
+        final DownloadJob job = new DownloadJob("Fonds du Launcher", true, wrapped);
         gameLauncher.addJob(job);
         versionManager.getExecutorService().submit(new Runnable() {
             public void run() {
