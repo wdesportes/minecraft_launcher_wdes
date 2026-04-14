@@ -53,12 +53,12 @@ public class LiteCheckBox extends JCheckBox {
 				final Composite previous = g2.getComposite();
 				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, rollover ? 0.85f : 0.7f));
 				g2.setColor(new Color(0, 0, 0, 200));
-				g2.fillRoundRect(x, y, BOX_SIZE - 1, BOX_SIZE - 1, 5, 5);
+				g2.fillRoundRect(x, y, BOX_SIZE - 1, BOX_SIZE - 1, 3, 3);
 				g2.setComposite(previous);
 
 				g2.setStroke(new BasicStroke(1.4f));
 				g2.setColor(rollover ? Color.WHITE : new Color(255, 255, 255, 200));
-				g2.drawRoundRect(x, y, BOX_SIZE - 1, BOX_SIZE - 1, 5, 5);
+				g2.drawRoundRect(x, y, BOX_SIZE - 1, BOX_SIZE - 1, 3, 3);
 
 				if (checked) {
 					g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));

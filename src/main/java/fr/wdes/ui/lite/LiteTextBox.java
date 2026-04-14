@@ -37,6 +37,7 @@ import java.awt.event.FocusListener;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
@@ -47,7 +48,8 @@ public class LiteTextBox extends JTextField implements FocusListener {
 	private static final Color FIELD_BORDER = new Color(255, 255, 255, 90);
 	private static final Color FIELD_BORDER_FOCUS = new Color(255, 255, 255, 200);
 	private static final Color PLACEHOLDER = new Color(220, 220, 220, 170);
-	private static final int ARC = 12;
+	private static final int ARC = 3;
+	private static final int PAD_X = 8;
 	protected final JLabel label;
 	public LiteTextBox(JFrame parent, String label) {
 		this.label = new JLabel(label);
@@ -59,8 +61,10 @@ public class LiteTextBox extends JTextField implements FocusListener {
 		setSelectionColor(new Color(255, 255, 255, 80));
 		setSelectedTextColor(Color.WHITE);
 		setBackground(FIELD_BG);
-		setBorder(new CompoundBorder(new LiteBorder(2, FIELD_BORDER, ARC), new EmptyBorder(0, 8, 0, 8)));
+		setBorder(new CompoundBorder(new LiteBorder(2, FIELD_BORDER, ARC), new EmptyBorder(0, PAD_X, 0, PAD_X)));
 		this.label.setForeground(PLACEHOLDER);
+		this.label.setVerticalAlignment(SwingConstants.CENTER);
+		this.label.setHorizontalAlignment(SwingConstants.LEFT);
 	}
 
 	@Override
@@ -87,7 +91,9 @@ public class LiteTextBox extends JTextField implements FocusListener {
 	@Override
 	public void setBounds(int x, int y, int w, int h) {
 		super.setBounds(x, y, w, h);
-		label.setBounds(x + 5, y + 3, w - 5, h - 5);
+		// Align the placeholder label with the text inside the field: same X
+		// padding as the EmptyBorder, full height so vertical centring works.
+		label.setBounds(x + PAD_X + 2, y, w - PAD_X * 2, h);
 	}
 
 	@Override
@@ -99,7 +105,7 @@ public class LiteTextBox extends JTextField implements FocusListener {
 	public void focusGained(FocusEvent e) {
 		label.setVisible(false);
 		setBackground(FIELD_BG_FOCUS);
-		setBorder(new CompoundBorder(new LiteBorder(2, FIELD_BORDER_FOCUS, ARC), new EmptyBorder(0, 8, 0, 8)));
+		setBorder(new CompoundBorder(new LiteBorder(2, FIELD_BORDER_FOCUS, ARC), new EmptyBorder(0, PAD_X, 0, PAD_X)));
 		repaint();
 	}
 
@@ -108,7 +114,7 @@ public class LiteTextBox extends JTextField implements FocusListener {
 			label.setVisible(true);
 		}
 		setBackground(FIELD_BG);
-		setBorder(new CompoundBorder(new LiteBorder(2, FIELD_BORDER, ARC), new EmptyBorder(0, 8, 0, 8)));
+		setBorder(new CompoundBorder(new LiteBorder(2, FIELD_BORDER, ARC), new EmptyBorder(0, PAD_X, 0, PAD_X)));
 		repaint();
 	}
 }
