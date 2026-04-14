@@ -15,6 +15,7 @@ public class JLink {
     public JLink(String Name, String Link,String tooltip,int x,int y,int w,int h) {
         this.nom = Name;
         this.lien = Link;
+        this.tooltip = tooltip;
         this.x = x;
         this.y = y;
         this.w = w;

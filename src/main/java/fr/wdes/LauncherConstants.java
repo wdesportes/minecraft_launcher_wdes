@@ -32,6 +32,14 @@ I8,        8        ,8I         88                            88                
     public static final String PLACEHOLDER_LOGIN             = Launcher.getInstance().config.PLACEHOLDER_LOGIN;
     public static final String PLACEHOLDER_PASSD             = Launcher.getInstance().config.PLACEHOLDER_PASSD;
     public static final String URL_AUTHENTIFICATION_SYSTEM   = Launcher.getInstance().config.URL_AUTHENTIFICATION_SYSTEM; // https://authserver.mojang.com
+    // Optional bottom-bar links - null means "don't render".
+    public static final String URL_HOME      = Launcher.getInstance().config.URL_HOME;
+    public static final String URL_FORUM     = Launcher.getInstance().config.URL_FORUM;
+    public static final String URL_DONATE    = Launcher.getInstance().config.URL_DONATE;
+    public static final String URL_TWITTER   = Launcher.getInstance().config.URL_TWITTER;
+    public static final String URL_FACEBOOK  = Launcher.getInstance().config.URL_FACEBOOK;
+    public static final String URL_YOUTUBE   = Launcher.getInstance().config.URL_YOUTUBE;
+    public static final String URL_STEAM     = Launcher.getInstance().config.URL_STEAM;
     public static URI constantURI(final String input) {
         try {
             return new URI(input);

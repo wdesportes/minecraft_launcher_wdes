@@ -18,6 +18,7 @@ public class JBouton {
     public JBouton( String action,String tooltip,int x,int y,int w,int h,URL icon,URL hover_icon) {
 
         this.action = action;
+        this.tooltip = tooltip;
         this.x = x;
         this.y = y;
         this.w = w;

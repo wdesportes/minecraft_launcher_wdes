@@ -107,8 +107,6 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	private static final URL facebookHoverIcon = Launcher.class.getResource("/fr/wdes/ressources/facebook_hover.png");
 	private static final URL steamIcon = Launcher.class.getResource("/fr/wdes/ressources/steam.png");
 	private static final URL steamHoverIcon = Launcher.class.getResource("/fr/wdes/ressources/steam_hover.png");
-	private static final URL gplusIcon = Launcher.class.getResource("/fr/wdes/ressources/gplus.png");
-	private static final URL gplusHoverIcon = Launcher.class.getResource("/fr/wdes/ressources/gplus_hover.png");
 	private static final String CLOSE_ACTION = "close";
 	private static final String GAME_ACTION = "play";
 	private static final String MINIMIZE_ACTION = "minimize";
@@ -117,11 +115,9 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	private static final String STEAM_ACTION = "steam";
 	private static final String FACEBOOK_ACTION = "facebook";
 	private static final String TWITTER_ACTION = "twitter";
-	private static final String GPLUS_ACTION = "gplus";
 	private static final String LOGIN_ACTION = "login";
 	private static final String IMAGE_LOGIN_ACTION = "image_login";
 	private static final String REMOVE_USER = "remove";
-	private static URI youtubeURL, twitterURL, facebookURL, gplusURL, steamURL;
 	private TransparentButton close, minimize, options;
 	protected static final int FRAME_WIDTH = 880, FRAME_HEIGHT = 520;
     private final AuthenticationService authentication = new YggdrasilAuthenticationService();
@@ -245,16 +241,16 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
  	       this.remember.setBorderPainted(false);
  	       this.remember.setContentAreaFilled(false);
  	       this.remember.setBorder(null);
- 	       this.remember.setForeground(Color.WHITE);
+ 	       // Match the placeholder colour so "Retenir" doesn't visually
+ 	       // dominate the inputs and play button next to it.
+ 	       this.remember.setForeground(new Color(220, 220, 220, 170));
  	       this.remember.setFont(minecraft);
  	       this.remember.setSelected(true);
 
- 	        JLink home = new JLink("Wdes", "https://wdes.fr", "Wdes.fr", 10, FRAME_HEIGHT - 27, 65, 20);
- 	        JLinks.add(home);
- 	        JLink forums = new JLink("Forum", "https://launchers.wdes.fr", "Wdes.fr", 82, FRAME_HEIGHT - 27, 90, 20);
- 	        JLinks.add(forums);
- 	        JLink donate = new JLink("Donner", "https://launchers.wdes.fr", "Wdes.fr", 185, FRAME_HEIGHT - 27, 85, 20);
- 	        JLinks.add(donate);
+ 	        // Bottom-left text links: only show those configured by the operator.
+ 	        addTextLinkIfConfigured(LauncherConstants.URL_HOME,   "Wdes",   10,                   FRAME_HEIGHT - 27, 65, 20);
+ 	        addTextLinkIfConfigured(LauncherConstants.URL_FORUM,  "Forum",  82,                   FRAME_HEIGHT - 27, 90, 20);
+ 	        addTextLinkIfConfigured(LauncherConstants.URL_DONATE, "Donner", 185,                  FRAME_HEIGHT - 27, 85, 20);
 
  	       for(JLink link: JLinks) {
  	          HyperlinkJLabel alink = new HyperlinkJLabel(link.getName(), link.getLink());
@@ -267,19 +263,16 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
  	          alink.setFont(largerMinecraft);
  	          launcherhome.add(alink);
  	        }
-	        JBouton steam = new JBouton( STEAM_ACTION, "Game with us on Steam",FRAME_WIDTH - 35, FRAME_HEIGHT - 32, 30, 30,steamIcon,steamHoverIcon);
-	        JBoutons.add(steam);
-	        JBouton facebook = new JBouton( FACEBOOK_ACTION, "Like us on Facebook",FRAME_WIDTH - 70, FRAME_HEIGHT - 32, 30, 30,facebookIcon,facebookHoverIcon);
-	        JBoutons.add(facebook);
-	        JBouton twitter = new JBouton( TWITTER_ACTION, "Follow us on Twitter",FRAME_WIDTH - 105, FRAME_HEIGHT - 32, 30, 30,twitterIcon,twitterHoverIcon);
-	        JBoutons.add(twitter);
-	        JBouton gplus = new JBouton( GPLUS_ACTION, "Follow us on Google+",FRAME_WIDTH - 140, FRAME_HEIGHT - 32, 30, 30,gplusIcon,gplusHoverIcon);
-	        JBoutons.add(gplus);
-	        JBouton youtube = new JBouton( YOUTUBE_ACTION, "Subscribe to our videos",FRAME_WIDTH - 175, FRAME_HEIGHT - 32, 30, 30,youtubeIcon,youtubeHoverIcon);
-	        JBoutons.add(youtube);
+	        // Bottom-right social icons: same opt-in rule. Slots are laid out
+	        // right-to-left so removing one doesn't leave a gap.
+	        int socialX = FRAME_WIDTH - 35;
+	        socialX = addSocialIfConfigured(LauncherConstants.URL_STEAM,    STEAM_ACTION,    "Game with us on Steam",      steamIcon,    steamHoverIcon,    socialX);
+	        socialX = addSocialIfConfigured(LauncherConstants.URL_FACEBOOK, FACEBOOK_ACTION, "Like us on Facebook",        facebookIcon, facebookHoverIcon, socialX);
+	        socialX = addSocialIfConfigured(LauncherConstants.URL_TWITTER,  TWITTER_ACTION,  "Follow us on Twitter",       twitterIcon,  twitterHoverIcon,  socialX);
+	        socialX = addSocialIfConfigured(LauncherConstants.URL_YOUTUBE,  YOUTUBE_ACTION,  "Subscribe to our videos",    youtubeIcon,  youtubeHoverIcon,  socialX);
 	        for(JBouton btn: JBoutons) {
 	        	TransparentButton abtn = new TransparentButton();
-	        	abtn.setToolTipText("Game with us on Steam");
+	        	abtn.setToolTipText(btn.getToolTip());
 	        	abtn.setIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(btn.getIcon()).getScaledInstance(30, 30, Image.SCALE_SMOOTH)));
 	        	abtn.setBounds(btn.x(),btn.y(), btn.w(), btn.h());
 	        	abtn.setTransparency(0.70F);
@@ -353,6 +346,30 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	private void setIcon(JLabel label, BufferedImage iconName, int w, int h) {
 		label.setIcon(new ImageIcon(ImageUtils.scaleImage(iconName, w, h)));
 	}
+
+	/** Add a bottom-left text link only when the operator configured a URL for it. */
+	private void addTextLinkIfConfigured(String url, String label, int x, int y, int w, int h) {
+		if (url == null || url.isEmpty()) {
+			return;
+		}
+		JLinks.add(new JLink(label, url, label, x, y, w, h));
+	}
+
+	/**
+	 * Add a bottom-right social icon only when configured. Returns the next X
+	 * to use so callers can lay icons out right-to-left without leaving holes
+	 * for skipped (unconfigured) services.
+	 */
+	private int addSocialIfConfigured(String url, String action, String tooltip, URL icon, URL hoverIcon, int x) {
+		if (url == null || url.isEmpty()) {
+			return x;
+		}
+		JBoutons.add(new JBouton(action, tooltip, x, FRAME_HEIGHT - 32, 30, 30, icon, hoverIcon));
+		socialUrls.put(action, url);
+		return x - 35;
+	}
+
+	private final java.util.Map<String, String> socialUrls = new java.util.HashMap<String, String>();
 
 	private static BufferedImage getDefaultImage() {
 		try {
@@ -701,41 +718,13 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 			checkPlayerState();
 
         }
-		else if (command.equals(STEAM_ACTION)) {
+		else if (socialUrls.containsKey(command)) {
+			// Social icon click: open the URL the operator configured for it.
 			try {
-				steamURL = new URI("http://spout.in/steam");
+				Compatibility.browse(new URI(socialUrls.get(command)));
 			} catch (URISyntaxException ex) {
 				ex.printStackTrace();
 			}
-			Compatibility.browse(steamURL);
-		} else if (command.equals(FACEBOOK_ACTION)) {
-			try {
-				facebookURL = new URI("http://spout.in/facebook");
-			} catch (URISyntaxException ex) {
-				ex.printStackTrace();
-			}
-			Compatibility.browse(facebookURL);
-		} else if (command.equals(TWITTER_ACTION)) {
-			try {
-				twitterURL = new URI("http://spout.in/twitter");
-			} catch (URISyntaxException ex) {
-				ex.printStackTrace();
-			}
-			Compatibility.browse(twitterURL);
-		}  else if (command.equals(GPLUS_ACTION)) {
-			try {
-				gplusURL = new URI("http://spout.in/gplus");
-			} catch (URISyntaxException ex) {
-				ex.printStackTrace();
-			}
-			Compatibility.browse(gplusURL);
-		}  else if (command.equals(YOUTUBE_ACTION)) {
-			try {
-				youtubeURL = new URI("http://spout.in/youtube");
-			} catch (URISyntaxException ex) {
-				ex.printStackTrace();
-			}
-			Compatibility.browse(youtubeURL);
 		}
 		else{
 			logger.info("Action de ?? : "+command);
