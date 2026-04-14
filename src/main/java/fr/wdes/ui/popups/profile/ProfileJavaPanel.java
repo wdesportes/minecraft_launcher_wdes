@@ -1,102 +1,75 @@
 package fr.wdes.ui.popups.profile;
 
-import java.awt.GridBagConstraints;
+import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import fr.wdes.OperatingSystem;
+import fr.wdes.ui.SettingsTheme;
+import fr.wdes.ui.lite.LiteCheckBox;
+import fr.wdes.ui.lite.LiteTextField;
 
 @SuppressWarnings("serial")
 public class ProfileJavaPanel extends JPanel {
     private final ProfileEditorPopup editor;
-    private final JCheckBox javaPathCustom = new JCheckBox("Executable:");
-    private final JTextField javaPathField = new JTextField();
-    private final JCheckBox javaArgsCustom = new JCheckBox("JVM Arguments:");
-    private final JTextField javaArgsField = new JTextField();
+    private final LiteCheckBox javaPathCustom = new LiteCheckBox("Executable Java");
+    private final JTextField javaPathField = new LiteTextField();
+    private final LiteCheckBox javaArgsCustom = new LiteCheckBox("Arguments JVM");
+    private final JTextField javaArgsField = new LiteTextField();
 
     public ProfileJavaPanel(final ProfileEditorPopup editor) {
         this.editor = editor;
 
-        setLayout(new GridBagLayout());
-        setBorder(BorderFactory.createTitledBorder("Paramètres Java (Avancé)"));
+        setLayout(new BorderLayout(0, 6));
+        setOpaque(false);
+        SettingsTheme.styleSection(this);
 
-        createInterface();
+        add(SettingsTheme.header("Paramètres Java (Avancé)"), BorderLayout.NORTH);
+        add(buildBody(), BorderLayout.CENTER);
+
         fillDefaultValues();
         addEventHandlers();
     }
 
     protected void addEventHandlers() {
         javaPathCustom.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
-                ProfileJavaPanel.this.updateJavaPathState();
-            }
+            public void itemStateChanged(final ItemEvent e) { updateJavaPathState(); }
         });
         javaPathField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(final DocumentEvent e) {
-                ProfileJavaPanel.this.updateJavaPath();
-            }
-
-            public void insertUpdate(final DocumentEvent e) {
-                ProfileJavaPanel.this.updateJavaPath();
-            }
-
-            public void removeUpdate(final DocumentEvent e) {
-                ProfileJavaPanel.this.updateJavaPath();
-            }
+            public void changedUpdate(final DocumentEvent e) { updateJavaPath(); }
+            public void insertUpdate(final DocumentEvent e)  { updateJavaPath(); }
+            public void removeUpdate(final DocumentEvent e)  { updateJavaPath(); }
         });
         javaArgsCustom.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
-                ProfileJavaPanel.this.updateJavaArgsState();
-            }
+            public void itemStateChanged(final ItemEvent e) { updateJavaArgsState(); }
         });
         javaArgsField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(final DocumentEvent e) {
-                ProfileJavaPanel.this.updateJavaArgs();
-            }
-
-            public void insertUpdate(final DocumentEvent e) {
-                ProfileJavaPanel.this.updateJavaArgs();
-            }
-
-            public void removeUpdate(final DocumentEvent e) {
-                ProfileJavaPanel.this.updateJavaArgs();
-            }
+            public void changedUpdate(final DocumentEvent e) { updateJavaArgs(); }
+            public void insertUpdate(final DocumentEvent e)  { updateJavaArgs(); }
+            public void removeUpdate(final DocumentEvent e)  { updateJavaArgs(); }
         });
     }
 
-    protected void createInterface() {
-        final GridBagConstraints constraints = new GridBagConstraints();
-        constraints.insets = new Insets(2, 2, 2, 2);
-        constraints.anchor = 17;
+    private JPanel buildBody() {
+        final JPanel body = new JPanel(new GridBagLayout());
+        body.setOpaque(false);
 
-        constraints.gridy = 0;
+        int row = 0;
+        body.add(javaPathCustom, SettingsTheme.labelConstraints(row));
+        body.add(javaPathField,  SettingsTheme.fieldConstraints(row));
+        row++;
 
-        add(javaPathCustom, constraints);
-        constraints.fill = 2;
-        constraints.weightx = 1.0D;
-        add(javaPathField, constraints);
-        constraints.weightx = 0.0D;
-        constraints.fill = 0;
+        body.add(javaArgsCustom, SettingsTheme.labelConstraints(row));
+        body.add(javaArgsField,  SettingsTheme.fieldConstraints(row));
+        row++;
 
-        constraints.gridy += 1;
-
-        add(javaArgsCustom, constraints);
-        constraints.fill = 2;
-        constraints.weightx = 1.0D;
-        add(javaArgsField, constraints);
-        constraints.weightx = 0.0D;
-        constraints.fill = 0;
-
-        constraints.gridy += 1;
+        return body;
     }
 
     protected void fillDefaultValues() {

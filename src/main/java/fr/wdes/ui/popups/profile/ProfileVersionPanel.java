@@ -1,80 +1,62 @@
 package fr.wdes.ui.popups.profile;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import fr.wdes.events.RefreshedVersionsListener;
-import fr.wdes.profile.Profile;
+import fr.wdes.ui.SettingsTheme;
+import fr.wdes.ui.lite.LiteComboBox;
 import fr.wdes.updater.VersionManager;
 import fr.wdes.updater.VersionSyncInfo;
-import fr.wdes.versions.ReleaseType;
 import fr.wdes.versions.Version;
 
 @SuppressWarnings("serial")
 public class ProfileVersionPanel extends JPanel implements RefreshedVersionsListener {
-    private static class ReleaseTypeCheckBox extends JCheckBox {
-        private final ReleaseType type;
 
-        private ReleaseTypeCheckBox(final ReleaseType type) {
-            super();
-            this.type = type;
-        }
-
-        public ReleaseType getType() {
-            return type;
-        }
-    }
-
-    private static class VersionListRenderer extends BasicComboBoxRenderer {
-       
-        @SuppressWarnings("rawtypes")
-		public Component getListCellRendererComponent( JList list, Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
+    private static class VersionListRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
             if(value instanceof VersionSyncInfo) {
                 final VersionSyncInfo syncInfo = (VersionSyncInfo) value;
                 final Version version = syncInfo.getLatestVersion();
-
-                value = String.format("%s %s", new Object[] { version.getType().getName(), version.getId() });
+                value = String.format("%s %s", version.getType().getName(), version.getId());
             }
-
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            setOpaque(true);
+            setForeground(SettingsTheme.FG);
+            setBackground(isSelected ? new java.awt.Color(255, 255, 255, 35) : new java.awt.Color(28, 28, 30, 240));
+            setFont(SettingsTheme.font(12f));
+            setBorder(new javax.swing.border.EmptyBorder(4, 8, 4, 8));
             return this;
         }
     }
 
     private final ProfileEditorPopup editor;
-
-    private final JComboBox<Object> versionList = new JComboBox<Object>();
-
-    private final List<ReleaseTypeCheckBox> customVersionTypes = new ArrayList<ReleaseTypeCheckBox>();
+    private final LiteComboBox<Object> versionList = new LiteComboBox<Object>();
 
     public ProfileVersionPanel(final ProfileEditorPopup editor) {
         this.editor = editor;
 
-        setLayout(new GridBagLayout());
-        setBorder(BorderFactory.createTitledBorder("Version de minecraft"));
+        setLayout(new BorderLayout(0, 6));
+        setOpaque(false);
+        SettingsTheme.styleSection(this);
 
-        createInterface();
+        add(SettingsTheme.header("Version de Minecraft"), BorderLayout.NORTH);
+        add(buildBody(), BorderLayout.CENTER);
+
         addEventHandlers();
 
         final List<VersionSyncInfo> versions = editor.getLauncher().getVersionManager().getVersions(editor.getProfile().getVersionFilter());
-
         if(versions.isEmpty())
             editor.getLauncher().getVersionManager().addRefreshedVersionsListener(this);
         else
@@ -83,69 +65,26 @@ public class ProfileVersionPanel extends JPanel implements RefreshedVersionsList
 
     protected void addEventHandlers() {
         versionList.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
-                ProfileVersionPanel.this.updateVersionSelection();
-            }
+            public void itemStateChanged(final ItemEvent e) { updateVersionSelection(); }
         });
-        for(final ReleaseTypeCheckBox type : customVersionTypes)
-            type.addItemListener(new ItemListener() {
-                private boolean isUpdating = false;
-
-                public void itemStateChanged(final ItemEvent e) {
-                    if(isUpdating)
-                        return;
-                    if(e.getStateChange() == 1 && type.getType().getPopupWarning() != null) {
-                        final int result = JOptionPane.showConfirmDialog(editor.getLauncher().getFrame(), type.getType().getPopupWarning() + "\n\nEtes vous sûr de continuer ?");
-
-                        isUpdating = true;
-                        if(result == 0) {
-                            type.setSelected(true);
-                            ProfileVersionPanel.this.updateCustomVersionFilter();
-                        }
-                        else
-                            type.setSelected(false);
-                        isUpdating = false;
-                    }
-                    else
-                        ProfileVersionPanel.this.updateCustomVersionFilter();
-                }
-            });
     }
 
-	@SuppressWarnings("unchecked")
-	protected void createInterface() {
-        final GridBagConstraints constraints = new GridBagConstraints();
-        constraints.insets = new Insets(2, 2, 2, 2);
-        constraints.anchor = 17;
+    private JPanel buildBody() {
+        final JPanel body = new JPanel(new GridBagLayout());
+        body.setOpaque(false);
 
-        constraints.gridy = 0;
+        final GridBagConstraints lc = SettingsTheme.labelConstraints(0);
+        body.add(new JLabel("") {
+            // empty placeholder for the label slot - the section header
+            // already says what this is, so we just want the field to
+            // span the full width.
+            { setPreferredSize(new java.awt.Dimension(0, 0)); }
+        }, lc);
 
-        for(final ReleaseType type : ReleaseType.values())
-            if(type.getDescription() != null) {
-            	
-                final ReleaseTypeCheckBox checkbox = new ReleaseTypeCheckBox(type);
-                checkbox.setSelected(editor.getProfile().getVersionFilter().getTypes().contains(type));
-                //customVersionTypes.add(checkbox);
-                
-                constraints.fill = 2;
-                constraints.weightx = 1.0D;
-                constraints.gridwidth = 0;
-                
-                //add(checkbox, constraints);
-                constraints.gridwidth = 1;
-                constraints.weightx = 0.0D;
-                constraints.fill = 0;
-                
-                constraints.gridy += 1;
-            }
-        add(new JLabel("Version : "), constraints);
-        constraints.fill = 2;
-        constraints.weightx = 1.0D;
-        add(versionList, constraints);
-        constraints.weightx = 0.0D;
-        constraints.fill = 0;
-
-        constraints.gridy += 1;
+        final GridBagConstraints fc = SettingsTheme.fieldConstraints(0);
+        fc.gridx = 0;
+        fc.gridwidth = 2;
+        body.add(versionList, fc);
 
         versionList.setRenderer(new VersionListRenderer());
         // Disabled by default; populateVersions() flips it back on once the
@@ -153,6 +92,7 @@ public class ProfileVersionPanel extends JPanel implements RefreshedVersionsList
         // version. Without this re-enable the dropdown was permanently
         // greyed out and there was no way to switch versions.
         versionList.setEnabled(false);
+        return body;
     }
 
     public void onVersionsRefreshed(final VersionManager manager) {
@@ -180,31 +120,11 @@ public class ProfileVersionPanel extends JPanel implements RefreshedVersionsList
         else
             versionList.setSelectedItem(selected);
 
-        // We finally have something to choose from, let the user pick.
         versionList.setEnabled(!versions.isEmpty());
     }
 
     public boolean shouldReceiveEventsInUIThread() {
         return true;
-    }
-
-    private void updateCustomVersionFilter() {
-        final Profile profile = editor.getProfile();
-        final Set<ReleaseType> newTypes = new HashSet<ReleaseType>(Profile.DEFAULT_RELEASE_TYPES);
-
-        for(final ReleaseTypeCheckBox type : customVersionTypes)
-            if(type.isSelected())
-                newTypes.add(type.getType());
-            else
-                newTypes.remove(type.getType());
-
-        if(newTypes.equals(Profile.DEFAULT_RELEASE_TYPES))
-            profile.setAllowedReleaseTypes(null);
-        else
-            profile.setAllowedReleaseTypes(newTypes);
-
-        populateVersions(editor.getLauncher().getVersionManager().getVersions(editor.getProfile().getVersionFilter()));
-        editor.getLauncher().getVersionManager().removeRefreshedVersionsListener(this);
     }
 
     private void updateVersionSelection() {

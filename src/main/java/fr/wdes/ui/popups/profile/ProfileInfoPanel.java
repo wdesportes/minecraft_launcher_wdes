@@ -1,17 +1,14 @@
 package fr.wdes.ui.popups.profile;
 
+import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -21,154 +18,110 @@ import javax.swing.event.DocumentListener;
 import fr.wdes.Launcher;
 import fr.wdes.profile.LauncherVisibilityRule;
 import fr.wdes.profile.Profile;
+import fr.wdes.ui.SettingsTheme;
+import fr.wdes.ui.lite.LiteCheckBox;
+import fr.wdes.ui.lite.LiteComboBox;
+import fr.wdes.ui.lite.LiteTextField;
 
 @SuppressWarnings("serial")
 public class ProfileInfoPanel extends JPanel {
     private final ProfileEditorPopup editor;
-    private final JCheckBox gameDirCustom = new JCheckBox("Répertoire du jeu:");
-    private final JTextField profileName = new JTextField();
-    private final JTextField gameDirField = new JTextField();
-    private final JCheckBox resolutionCustom = new JCheckBox("Résolution:");
-    private final JTextField resolutionWidth = new JTextField();
-    private final JTextField resolutionHeight = new JTextField();
-        private final JCheckBox launcherVisibilityCustom = new JCheckBox("Visibilité du launcher:");
-    private final JComboBox<LauncherVisibilityRule> launcherVisibilityOption = new JComboBox<LauncherVisibilityRule>();
+    private final LiteCheckBox gameDirCustom = new LiteCheckBox("Répertoire du jeu");
+    private final JTextField profileName = new LiteTextField();
+    private final JTextField gameDirField = new LiteTextField();
+    private final LiteCheckBox resolutionCustom = new LiteCheckBox("Résolution personnalisée");
+    private final JTextField resolutionWidth = new LiteTextField();
+    private final JTextField resolutionHeight = new LiteTextField();
+    private final LiteCheckBox launcherVisibilityCustom = new LiteCheckBox("Visibilité du launcher");
+    private final LiteComboBox<LauncherVisibilityRule> launcherVisibilityOption = new LiteComboBox<LauncherVisibilityRule>();
 
     public ProfileInfoPanel(final ProfileEditorPopup editor) {
         this.editor = editor;
 
-        setLayout(new GridBagLayout());
-        setBorder(BorderFactory.createTitledBorder("Informations du profil"));
+        setLayout(new BorderLayout(0, 6));
+        setOpaque(false);
+        SettingsTheme.styleSection(this);
 
-        createInterface();
+        add(SettingsTheme.header("Informations du profil"), BorderLayout.NORTH);
+        add(buildBody(), BorderLayout.CENTER);
+
         fillDefaultValues();
         addEventHandlers();
     }
 
     protected void addEventHandlers() {
         profileName.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(final DocumentEvent e) {
-                ProfileInfoPanel.this.updateProfileName();
-            }
-
-            public void insertUpdate(final DocumentEvent e) {
-                ProfileInfoPanel.this.updateProfileName();
-            }
-
-            public void removeUpdate(final DocumentEvent e) {
-                ProfileInfoPanel.this.updateProfileName();
-            }
+            public void changedUpdate(final DocumentEvent e) { updateProfileName(); }
+            public void insertUpdate(final DocumentEvent e)  { updateProfileName(); }
+            public void removeUpdate(final DocumentEvent e)  { updateProfileName(); }
         });
-        /*
-        gameDirCustom.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
-                ProfileInfoPanel.this.updateGameDirState();
-            }
-        });
-        */
         gameDirField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(final DocumentEvent e) {
-                ProfileInfoPanel.this.updateGameDir();
-            }
-
-            public void insertUpdate(final DocumentEvent e) {
-                ProfileInfoPanel.this.updateGameDir();
-            }
-
-            public void removeUpdate(final DocumentEvent e) {
-                ProfileInfoPanel.this.updateGameDir();
-            }
+            public void changedUpdate(final DocumentEvent e) { updateGameDir(); }
+            public void insertUpdate(final DocumentEvent e)  { updateGameDir(); }
+            public void removeUpdate(final DocumentEvent e)  { updateGameDir(); }
         });
         resolutionCustom.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
-                ProfileInfoPanel.this.updateResolutionState();
-            }
+            public void itemStateChanged(final ItemEvent e) { updateResolutionState(); }
         });
         final DocumentListener resolutionListener = new DocumentListener() {
-            public void changedUpdate(final DocumentEvent e) {
-                ProfileInfoPanel.this.updateResolution();
-            }
-
-            public void insertUpdate(final DocumentEvent e) {
-                ProfileInfoPanel.this.updateResolution();
-            }
-
-            public void removeUpdate(final DocumentEvent e) {
-                ProfileInfoPanel.this.updateResolution();
-            }
+            public void changedUpdate(final DocumentEvent e) { updateResolution(); }
+            public void insertUpdate(final DocumentEvent e)  { updateResolution(); }
+            public void removeUpdate(final DocumentEvent e)  { updateResolution(); }
         };
         resolutionWidth.getDocument().addDocumentListener(resolutionListener);
         resolutionHeight.getDocument().addDocumentListener(resolutionListener);
 
-
         launcherVisibilityCustom.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
-                ProfileInfoPanel.this.updateLauncherVisibilityState();
-            }
+            public void itemStateChanged(final ItemEvent e) { updateLauncherVisibilityState(); }
         });
         launcherVisibilityOption.addItemListener(new ItemListener() {
-            public void itemStateChanged(final ItemEvent e) {
-                ProfileInfoPanel.this.updateLauncherVisibilitySelection();
-            }
+            public void itemStateChanged(final ItemEvent e) { updateLauncherVisibilitySelection(); }
         });
     }
 
-    protected void createInterface() {
-        final GridBagConstraints constraints = new GridBagConstraints();
-        constraints.insets = new Insets(2, 2, 2, 2);
-        constraints.anchor = 17;
+    @SuppressWarnings("unchecked")
+    private JPanel buildBody() {
+        final JPanel body = new JPanel(new GridBagLayout());
+        body.setOpaque(false);
 
-        constraints.gridy = 0;
+        int row = 0;
 
-        add(new JLabel("Nom du profil:"), constraints);
-        constraints.fill = 2;
-        constraints.weightx = 1.0D;
-        add(profileName, constraints);
-        constraints.weightx = 0.0D;
-        constraints.fill = 0;
+        body.add(SettingsTheme.formLabel("Nom du profil"), SettingsTheme.labelConstraints(row));
+        body.add(profileName, SettingsTheme.fieldConstraints(row));
+        row++;
 
-        constraints.gridy += 1;
-
-        add(gameDirCustom, constraints);
+        // Game directory
+        body.add(gameDirCustom, SettingsTheme.labelConstraints(row));
         gameDirCustom.setEnabled(false);
-        constraints.fill = 2;
-        constraints.weightx = 1.0D;
-        add(gameDirField, constraints);
-        constraints.weightx = 0.0D;
-        constraints.fill = 0;
+        body.add(gameDirField, SettingsTheme.fieldConstraints(row));
+        row++;
 
-        constraints.gridy += 1;
-
+        // Resolution
         final JPanel resolutionPanel = new JPanel();
-        resolutionPanel.setLayout(new BoxLayout(resolutionPanel, 0));
+        resolutionPanel.setOpaque(false);
+        resolutionPanel.setLayout(new BoxLayout(resolutionPanel, BoxLayout.X_AXIS));
         resolutionPanel.add(resolutionWidth);
-        resolutionPanel.add(Box.createHorizontalStrut(5));
-        resolutionPanel.add(new JLabel("x"));
-        resolutionPanel.add(Box.createHorizontalStrut(5));
+        resolutionPanel.add(Box.createHorizontalStrut(8));
+        final JLabel x = new JLabel("x");
+        x.setForeground(SettingsTheme.MUTED);
+        x.setFont(SettingsTheme.font(12f));
+        resolutionPanel.add(x);
+        resolutionPanel.add(Box.createHorizontalStrut(8));
         resolutionPanel.add(resolutionHeight);
 
-        add(resolutionCustom, constraints);
-        resolutionCustom.setEnabled(false);
-        constraints.fill = 2;
-        constraints.weightx = 1.0D;
-        add(resolutionPanel, constraints);
-        constraints.gridwidth = 1;
-        constraints.weightx = 0.0D;
-        constraints.fill = 0;
+        body.add(resolutionCustom, SettingsTheme.labelConstraints(row));
+        body.add(resolutionPanel, SettingsTheme.fieldConstraints(row));
+        row++;
 
-        constraints.gridy += 1;
-
-        add(launcherVisibilityCustom, constraints);
-        constraints.fill = 2;
-        constraints.weightx = 1.0D;
-        add(launcherVisibilityOption, constraints);
-        constraints.weightx = 0.0D;
-        constraints.fill = 0;
-
-        constraints.gridy += 1;
+        // Visibility rule
+        body.add(launcherVisibilityCustom, SettingsTheme.labelConstraints(row));
+        body.add(launcherVisibilityOption, SettingsTheme.fieldConstraints(row));
+        row++;
 
         for(final LauncherVisibilityRule value : LauncherVisibilityRule.values())
             launcherVisibilityOption.addItem(value);
+
+        return body;
     }
 
     protected void fillDefaultValues() {
@@ -193,10 +146,7 @@ public class ProfileInfoPanel extends JPanel {
         resolutionHeight.setText(String.valueOf(Launcher.getInstance().height));
         updateResolutionState();
 
-
-
         final LauncherVisibilityRule visibility = editor.getProfile().getLauncherVisibilityOnGameClose();
-
         if(visibility != null) {
             launcherVisibilityCustom.setSelected(true);
             launcherVisibilityOption.setSelectedItem(visibility);
@@ -223,8 +173,6 @@ public class ProfileInfoPanel extends JPanel {
             editor.getProfile().setGameDir(null);
         }
     }
-
-
 
     private void updateLauncherVisibilitySelection() {
         final Profile profile = editor.getProfile();

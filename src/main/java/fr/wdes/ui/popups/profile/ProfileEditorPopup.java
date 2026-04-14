@@ -1,6 +1,7 @@
 package fr.wdes.ui.popups.profile;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,9 +9,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -19,14 +18,21 @@ import fr.wdes.Launcher;
 import fr.wdes.logger;
 import fr.wdes.profile.Profile;
 import fr.wdes.profile.ProfileManager;
+import fr.wdes.ui.SettingsTheme;
+import fr.wdes.ui.lite.LiteButton;
 
 @SuppressWarnings("serial")
 public class ProfileEditorPopup extends JPanel implements ActionListener {
     public static void showEditProfileDialog(final Launcher launcher, final Profile profile) {
         final JDialog dialog = new JDialog(launcher.getFrame(), "Paramètres du profil", true);
         final ProfileEditorPopup editor = new ProfileEditorPopup(launcher, profile);
-        dialog.add(editor);
+        dialog.setContentPane(editor);
         dialog.pack();
+        // Cap the popup height at the launcher frame so very tall section
+        // panels don't push it off-screen on small displays.
+        final Dimension pref = dialog.getPreferredSize();
+        final int maxH = Math.max(280, launcher.getFrame().getHeight() - 40);
+        dialog.setSize(Math.max(420, pref.width), Math.min(pref.height, maxH));
         dialog.setLocationRelativeTo(launcher.getFrame());
         dialog.setVisible(true);
     }
@@ -34,8 +40,8 @@ public class ProfileEditorPopup extends JPanel implements ActionListener {
     private final Launcher launcher;
     private final Profile originalProfile;
     private final Profile profile;
-    private final JButton saveButton = new JButton("Save Profile");
-    private final JButton cancelButton = new JButton("Cancel");
+    private final LiteButton saveButton = new LiteButton("Enregistrer");
+    private final LiteButton cancelButton = new LiteButton("Annuler");
     private final ProfileInfoPanel profileInfoPanel;
     private final ProfileVersionPanel profileVersionPanel;
 
@@ -53,9 +59,15 @@ public class ProfileEditorPopup extends JPanel implements ActionListener {
 
         saveButton.addActionListener(this);
         cancelButton.addActionListener(this);
+        saveButton.setFont(SettingsTheme.font(12f));
+        cancelButton.setFont(SettingsTheme.font(12f));
+        saveButton.setPreferredSize(new Dimension(120, 28));
+        cancelButton.setPreferredSize(new Dimension(120, 28));
 
-        setBorder(new EmptyBorder(5, 5, 5, 5));
-        setLayout(new BorderLayout(0, 5));
+        setOpaque(true);
+        setBackground(SettingsTheme.BG);
+        setBorder(new EmptyBorder(14, 16, 14, 16));
+        setLayout(new BorderLayout(0, 10));
         createInterface();
     }
 
@@ -73,7 +85,7 @@ public class ProfileEditorPopup extends JPanel implements ActionListener {
                 }
 
                 profiles.put(profile.getName(), profile);
-            
+
                 manager.saveProfiles();
                 manager.fireRefreshEvent();
             }
@@ -86,20 +98,22 @@ public class ProfileEditorPopup extends JPanel implements ActionListener {
     }
 
     protected void createInterface() {
-        final JPanel standardPanels = new JPanel(true);
-        standardPanels.setLayout(new BoxLayout(standardPanels, 1));
+        final JPanel standardPanels = new JPanel();
+        standardPanels.setOpaque(false);
+        standardPanels.setLayout(new BoxLayout(standardPanels, BoxLayout.Y_AXIS));
         standardPanels.add(profileInfoPanel);
+        standardPanels.add(SettingsTheme.vGap(10));
         standardPanels.add(profileVersionPanel);
+        standardPanels.add(SettingsTheme.vGap(10));
         standardPanels.add(javaInfoPanel);
 
-        add(standardPanels, "Center");
+        add(standardPanels, BorderLayout.CENTER);
 
-        final JPanel buttonPannel = new JPanel();
-        buttonPannel.setLayout(new BoxLayout(buttonPannel, 0));
-        buttonPannel.add(cancelButton);
-        buttonPannel.add(Box.createGlue());
-        buttonPannel.add(saveButton);
-        add(buttonPannel, "South");
+        final JPanel buttonPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 0));
+        buttonPanel.setOpaque(false);
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(saveButton);
+        add(buttonPanel, BorderLayout.SOUTH);
     }
 
     public Launcher getLauncher() {
