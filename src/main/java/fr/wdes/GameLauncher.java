@@ -401,6 +401,16 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
 
     public void onJavaProcessEnded(final JavaProcess process) {
         final int exitCode = process.getExitCode();
+        // Always dump the captured stdout tail; without this, a Minecraft
+        // process that started and exited within milliseconds leaves no
+        // visible trace in the launcher log so debugging is effectively
+        // impossible.
+        final String[] tail = process.getSysOutLines().getItems();
+        for (int i = 0; i < tail.length; i++) {
+            if (tail[i] != null) {
+                logger.info("[Minecraft tail] " + tail[i]);
+            }
+        }
 
         if(exitCode == 0) {
         	launcher.getLauncherPanel().progressBar.setText("[" + exitCode + "] Arrêt du jeu,aucun problème détécté.");
