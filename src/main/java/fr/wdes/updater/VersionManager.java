@@ -129,7 +129,7 @@ public class VersionManager {
         return remoteVersionList;
     }
 
-    private Set<Downloadable> getResourceFiles(Proxy proxy, File baseDirectory, CompleteVersion version)
+    private Set<Downloadable> getResourceFiles(Proxy proxy, File baseDirectory, CompleteVersion version) throws java.net.MalformedURLException
     {
       Set<Downloadable> result = new HashSet<Downloadable>();
       InputStream inputStream = null;
@@ -141,10 +141,12 @@ public class VersionManager {
       if (indexName == null) {
         indexName = "legacy";
       }
+      logger.info("Processing index: " + indexName);
+      URL indexUrl = this.remoteVersionList.getIndex(indexName);
+
       File indexFile = new File(indexesFolder, indexName + ".json");
       try
       {
-        URL indexUrl = this.remoteVersionList.getIndex(indexName);
         inputStream = indexUrl.openConnection(proxy).getInputStream();
         String json = IOUtils.toString(inputStream);
         FileUtils.writeStringToFile(indexFile, json);
@@ -171,7 +173,7 @@ public class VersionManager {
       }
       catch (Exception ex)
       {
-    	  logger.warn("Couldn't download resources", ex);
+    	  logger.warn("Couldn't download resources from: " + indexUrl, ex);
       }
       finally
       {
@@ -185,7 +187,7 @@ public class VersionManager {
     	logger.info("Téléchargement des fonds en cours");
       Set<Downloadable> result = new HashSet<Downloadable>();
       InputStream inputStream = null;
-      //File dossier_fonds = new File(Launcher.getInstance().getWorkingDirectory(), "fonds");
+      File dossier_fonds = new File(Launcher.getInstance().getWorkingDirectory(), "fonds");
       long start = System.nanoTime();
 
       //File indexFile = new File(dossier_fonds,  "fonds.json");
@@ -203,21 +205,20 @@ public class VersionManager {
         for (Map.Entry<Fonds.Fond, String> entry : index.getUniqueObjects().entrySet())
         {
 
-        	Fonds.Fond object = (Fonds.Fond)entry.getKey();
-          String filename = object.getName();
-          //File file = new File(dossier_fonds, filename);
-          File emplacement = new File(Launcher.getInstance().getWorkingDirectory(),filename);
-          //logger.info("Téléchargement de : "+filename +"=======>"+emplacement.getAbsolutePath());
-          if ((!emplacement.isFile()) || (FileUtils.sizeOf(emplacement) != object.getSize()))
-          {
-            String fondUrl = LauncherConstants.URL_FONDS_DOWNLOAD+filename;
-            logger.info("Le fond " + filename + " (" + fondUrl + ") sera téléchargé.");
-            Downloadable downloadable = new BackgroundDownloadable(proxy, (String)entry.getValue(), object, fondUrl, emplacement);
-            downloadable.setExpectedSize(object.getSize());
-            result.add(downloadable);
-          } else {
-              logger.info("Le fond " + filename + " est OK.");
-          }
+           	Fonds.Fond object = (Fonds.Fond)entry.getKey();
+           	String filePath = (String)entry.getValue();
+            File emplacement = new File(dossier_fonds, filePath);
+            //logger.info("Téléchargement de : "+filename +"=======>"+emplacement.getAbsolutePath());
+            if ((!emplacement.isFile()) || (FileUtils.sizeOf(emplacement) != object.getSize()))
+            {
+                String fondUrl = LauncherConstants.URL_FONDS_DOWNLOAD+filePath;
+                logger.info("Le fond " + object.getName() + " (" + fondUrl + ") sera téléchargé.");
+                Downloadable downloadable = new BackgroundDownloadable(proxy, filePath, object, fondUrl, emplacement);
+                downloadable.setExpectedSize(object.getSize());
+                result.add(downloadable);
+            } else {
+                logger.info("Le fond " + object.getName() + " est OK.");
+            }
         }
         long end = System.nanoTime();
         long delta = end - start;
