@@ -307,6 +307,16 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
             processLauncher.addSplitCommands(defaultArgument);
         }
 
+        // Quiet the in-game "MCO Availability Checker" thread that tries to
+        // reach the Realms API every minute. realms-1.3.5.jar (shipped with
+        // 1.7.10) can't parse the modern API's response and spams parse
+        // errors. -Drealms.disabled=true is a no-op on that old client but
+        // is honoured by newer versions, and -Dminecraft.api.env=local is
+        // Mojang's official "kill the API" knob - the checker fails fast
+        // and quietly instead of looping. Both are harmless for offline
+        // play.
+        processLauncher.addCommands(new String[] { "-Drealms.disabled=true" });
+        processLauncher.addCommands(new String[] { "-Dminecraft.api.env=local" });
         processLauncher.addCommands(new String[] { "-Djava.library.path=" + nativeDir.getAbsolutePath() });
         processLauncher.addCommands(new String[] { "-cp", constructClassPath(version) });
         processLauncher.addCommands(new String[] { version.getMainClass() });
