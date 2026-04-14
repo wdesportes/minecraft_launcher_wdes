@@ -18,8 +18,13 @@ public class JObjectContainer {
 	 * Each entry needs at minimum a non-empty {@code url} and {@code name};
 	 * everything else is optional. The whole array can be omitted to hide the
 	 * footer links entirely.
+	 *
+	 * <p>Public so {@link fr.wdes.ui.LauncherPanel} (different package) can
+	 * read it directly; the older flat {@code URL_*} fields are exposed
+	 * through {@link LauncherConstants} but adding seven more constants for
+	 * a structured collection isn't worth it.
 	 */
-	protected List<Link> links;
+	public List<Link> links;
 
 	/**
 	 * Bottom-right social icons, keyed by the well-known network identifier
@@ -27,20 +32,20 @@ public class JObjectContainer {
 	 * rendered; missing entries leave no gap because icons lay out right-to-
 	 * left.
 	 */
-	protected Map<String, Social> socials;
+	public Map<String, Social> socials;
 
 	public JObjectContainer() { }
 
 	/** {@code {"url": "...", "tooltip": "...", "name": "Forum"}} */
 	public static class Link {
-		protected String url;
-		protected String tooltip;
-		protected String name;
+		public String url;
+		public String tooltip;
+		public String name;
 	}
 
 	/** {@code {"url": "...", "tooltip": "..."}} */
 	public static class Social {
-		protected String url;
-		protected String tooltip;
+		public String url;
+		public String tooltip;
 	}
 }
