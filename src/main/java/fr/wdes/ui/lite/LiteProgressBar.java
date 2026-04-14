@@ -2,6 +2,7 @@ package fr.wdes.ui.lite;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 
 import javax.swing.JProgressBar;
 
@@ -35,6 +36,10 @@ public class LiteProgressBar extends JProgressBar implements Transparent {
 		g2d = (Graphics2D) g;
 
 		if (this.isStringPainted() && getString().length() > 0) {
+			// Without these hints the bitmap font renders aliased and looks
+			// horrible compared to the rest of the UI.
+			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 			g2d.setFont(getFont());
 
 			final int startWidth = (getWidth() - g2d.getFontMetrics().stringWidth(getString())) / 2;

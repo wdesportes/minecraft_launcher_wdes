@@ -60,6 +60,17 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
     private CompleteVersion version;
     private LauncherVisibilityRule visibilityRule;
     private boolean isWorking;
+    /**
+     * Set by {@link #playGame()} once both the version+libraries and resources
+     * download jobs are queued, cleared as soon as {@link #launchGame()} is
+     * dispatched. We need this in addition to {@link #isWorking} because the
+     * launcher's own background fonds download also flows through
+     * {@link #onDownloadJobFinished} - without this gate, the fonds job
+     * completing in the small window between {@code setWorking(true)} and the
+     * play-sequence's {@code addJob} calls would trip {@code !hasRemainingJobs}
+     * and kick off the game before its own download jobs were even queued.
+     */
+    private boolean launchPending;
     private File nativeDir;
     private static final String CRASH_IDENTIFIER_MAGIC = "#@!@#";
     protected final Gson gson = new Gson();
@@ -358,11 +369,28 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
             if(job.getFailures() > 0) {
             	launcher.getLauncherPanel().progressBar.setText("[FAIL] Tâche '" + job.getName() + "' terminée," + job.getFailures() + " echec(s)!");
             	logger.warn("[FAIL] Tâche '" + job.getName() + "' terminée avec : " + job.getFailures() + " echec(s)!");
+                launchPending = false;
                 setWorking(false);
+                return;
             }
-            else {
-            	launcher.getLauncherPanel().progressBar.setText("[OK] Tâche '" + job.getName() + "' terminée.");
-            	logger.info("[OK] Tâche '" + job.getName() + "' terminée.");
+
+            launcher.getLauncherPanel().progressBar.setText("[OK] Tâche '" + job.getName() + "' terminée.");
+            logger.info("[OK] Tâche '" + job.getName() + "' terminée.");
+
+            // Once every download for the queued play-sequence is complete,
+            // hand off to launchGame. The synchronous !hasRemainingJobs check
+            // at the bottom of playGame() doesn't fire because startDownloading
+            // is async, so the game would never actually start without this
+            // trigger. launchPending ensures we only fire for the play
+            // sequence and not for stray background downloads (fonds, etc.).
+            if (launchPending && !hasRemainingJobs()) {
+                launchPending = false;
+                try {
+                    launchGame();
+                }
+                catch(final Throwable ex) {
+                	logger.warn("Erreur,merci de contacter le support !!", ex);
+                }
             }
         }
     }
@@ -556,27 +584,40 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                 DownloadJob job = new DownloadJob(" Version & Libraries "+launcher.config.version, false, this);
                 addJob(job);
                 launcher.getVersionManager().downloadVersion(syncInfo, job);
-                job.startDownloading(launcher.getVersionManager().getExecutorService());
 
                 DownloadJob resourceJob = new DownloadJob("Resources", true, this);
                 addJob(resourceJob);
                 launcher.getVersionManager().downloadResources(resourceJob, this.version);
+
+                // Both play-sequence jobs are queued; arm the launch trigger
+                // before they actually start so onDownloadJobFinished knows
+                // it should hand off to launchGame once everything completes.
+                launchPending = true;
+
+                job.startDownloading(launcher.getVersionManager().getExecutorService());
                 resourceJob.startDownloading(launcher.getVersionManager().getExecutorService());
             }
             catch(final IOException e) {
             	logger.warn("Couldn't get version info for " + syncInfo.getLatestVersion(), e);
+                launchPending = false;
                 setWorking(false);
                 return;
             }
             synchronized(lock) {
 
-                    if(isWorking() && !hasRemainingJobs())
+                    // Edge case: every queued job was already cached and the
+                    // executor finished them before we got here. Hand off
+                    // straight away rather than waiting for a callback that
+                    // already fired.
+                    if(launchPending && isWorking() && !hasRemainingJobs()) {
+                        launchPending = false;
                         try {
                             launchGame();
                         }
                         catch(final Throwable ex) {
                         	logger.warn("Erreur,merci de contacter le support !!", ex);
                         }
+                    }
 
          }
         }
