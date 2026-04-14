@@ -44,6 +44,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import fr.wdes.Http;
+import fr.wdes.JObjectContainer;
 import fr.wdes.Launcher;
 import fr.wdes.LauncherConstants;
 import fr.wdes.logger;
@@ -123,7 +124,6 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
     private final AuthenticationService authentication = new YggdrasilAuthenticationService();
 	private final Map<JButton, DynamicButton> removeButtons = new HashMap<JButton, DynamicButton>();
 	protected boolean loggedin = false;
-	List<JLink> JLinks = new ArrayList<JLink>();
 	List<JBouton> JBoutons = new ArrayList<JBouton>();
     private BackgroundImage CreateHome()
     {
@@ -247,29 +247,38 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
  	       this.remember.setFont(minecraft);
  	       this.remember.setSelected(true);
 
- 	        // Bottom-left text links: only show those configured by the operator.
- 	        addTextLinkIfConfigured(LauncherConstants.URL_HOME,   "Wdes",   10,                   FRAME_HEIGHT - 27, 65, 20);
- 	        addTextLinkIfConfigured(LauncherConstants.URL_FORUM,  "Forum",  82,                   FRAME_HEIGHT - 27, 90, 20);
- 	        addTextLinkIfConfigured(LauncherConstants.URL_DONATE, "Donner", 185,                  FRAME_HEIGHT - 27, 85, 20);
-
- 	       for(JLink link: JLinks) {
- 	          HyperlinkJLabel alink = new HyperlinkJLabel(link.getName(), link.getLink());
- 	          alink.setToolTipText(link.getToolTip());
- 	          alink.setBounds(link.x(),link.y(), link.w(), link.h());
- 	          alink.setForeground(Color.WHITE);
- 	          alink.setOpaque(false);
- 	          alink.setTransparency(0.40F);
- 	          alink.setHoverTransparency(1F);
- 	          alink.setFont(largerMinecraft);
- 	          launcherhome.add(alink);
+ 	        // Bottom-left text links from web config: render in declaration
+ 	        // order, auto-sizing each label to its text so the operator only
+ 	        // has to set name / url / tooltip.
+ 	        int linkX = 10;
+ 	        if (Launcher.getInstance().config.links != null) {
+ 	          for (JObjectContainer.Link link : Launcher.getInstance().config.links) {
+ 	            if (link == null || link.url == null || link.url.isEmpty() || link.name == null) {
+ 	              continue;
+ 	            }
+ 	            HyperlinkJLabel alink = new HyperlinkJLabel(link.name, link.url);
+ 	            alink.setToolTipText(link.tooltip);
+ 	            alink.setForeground(Color.WHITE);
+ 	            alink.setOpaque(false);
+ 	            alink.setTransparency(0.40F);
+ 	            alink.setHoverTransparency(1F);
+ 	            alink.setFont(largerMinecraft);
+ 	            int linkW = alink.getFontMetrics(largerMinecraft).stringWidth(link.name) + 8;
+ 	            alink.setBounds(linkX, FRAME_HEIGHT - 27, linkW, 20);
+ 	            launcherhome.add(alink);
+ 	            linkX += linkW + 12;
+ 	          }
  	        }
-	        // Bottom-right social icons: same opt-in rule. Slots are laid out
-	        // right-to-left so removing one doesn't leave a gap.
+	        // Bottom-right social icons from web config.socials. The map key is
+	        // the network identifier (facebook, twitter, ...) and is also the
+	        // action command used to look the URL up on click. Only services
+	        // present in the config are rendered; icons lay out right-to-left
+	        // so a missing service doesn't leave a hole.
 	        int socialX = FRAME_WIDTH - 35;
-	        socialX = addSocialIfConfigured(LauncherConstants.URL_STEAM,    STEAM_ACTION,    "Game with us on Steam",      steamIcon,    steamHoverIcon,    socialX);
-	        socialX = addSocialIfConfigured(LauncherConstants.URL_FACEBOOK, FACEBOOK_ACTION, "Like us on Facebook",        facebookIcon, facebookHoverIcon, socialX);
-	        socialX = addSocialIfConfigured(LauncherConstants.URL_TWITTER,  TWITTER_ACTION,  "Follow us on Twitter",       twitterIcon,  twitterHoverIcon,  socialX);
-	        socialX = addSocialIfConfigured(LauncherConstants.URL_YOUTUBE,  YOUTUBE_ACTION,  "Subscribe to our videos",    youtubeIcon,  youtubeHoverIcon,  socialX);
+	        socialX = addSocialIfConfigured(STEAM_ACTION,    steamIcon,    steamHoverIcon,    socialX);
+	        socialX = addSocialIfConfigured(FACEBOOK_ACTION, facebookIcon, facebookHoverIcon, socialX);
+	        socialX = addSocialIfConfigured(TWITTER_ACTION,  twitterIcon,  twitterHoverIcon,  socialX);
+	        socialX = addSocialIfConfigured(YOUTUBE_ACTION,  youtubeIcon,  youtubeHoverIcon,  socialX);
 	        for(JBouton btn: JBoutons) {
 	        	TransparentButton abtn = new TransparentButton();
 	        	abtn.setToolTipText(btn.getToolTip());
@@ -347,25 +356,23 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 		label.setIcon(new ImageIcon(ImageUtils.scaleImage(iconName, w, h)));
 	}
 
-	/** Add a bottom-left text link only when the operator configured a URL for it. */
-	private void addTextLinkIfConfigured(String url, String label, int x, int y, int w, int h) {
-		if (url == null || url.isEmpty()) {
-			return;
-		}
-		JLinks.add(new JLink(label, url, label, x, y, w, h));
-	}
-
 	/**
-	 * Add a bottom-right social icon only when configured. Returns the next X
-	 * to use so callers can lay icons out right-to-left without leaving holes
-	 * for skipped (unconfigured) services.
+	 * Add a bottom-right social icon only when the operator configured an
+	 * entry for {@code action} under {@code config.socials}. Returns the next
+	 * X to use so callers can lay icons out right-to-left without leaving
+	 * holes for skipped services.
 	 */
-	private int addSocialIfConfigured(String url, String action, String tooltip, URL icon, URL hoverIcon, int x) {
-		if (url == null || url.isEmpty()) {
+	private int addSocialIfConfigured(String action, URL icon, URL hoverIcon, int x) {
+		final java.util.Map<String, JObjectContainer.Social> socials = Launcher.getInstance().config.socials;
+		if (socials == null) {
 			return x;
 		}
-		JBoutons.add(new JBouton(action, tooltip, x, FRAME_HEIGHT - 32, 30, 30, icon, hoverIcon));
-		socialUrls.put(action, url);
+		final JObjectContainer.Social s = socials.get(action);
+		if (s == null || s.url == null || s.url.isEmpty()) {
+			return x;
+		}
+		JBoutons.add(new JBouton(action, s.tooltip, x, FRAME_HEIGHT - 32, 30, 30, icon, hoverIcon));
+		socialUrls.put(action, s.url);
 		return x - 35;
 	}
 

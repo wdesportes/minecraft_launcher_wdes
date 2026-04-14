@@ -1,5 +1,8 @@
 package fr.wdes;
 
+import java.util.List;
+import java.util.Map;
+
 public class JObjectContainer {
 	protected String nom;
 	protected String version;
@@ -9,15 +12,35 @@ public class JObjectContainer {
 	protected String URL_FONDS_DOWNLOAD;
 	protected String width;
 	protected String height;
-	// Optional bottom-left text links. Any field left null is simply not
-	// rendered, so the launcher only shows links the operator opted into.
-	protected String URL_HOME;
-	protected String URL_FORUM;
-	protected String URL_DONATE;
-	// Optional bottom-right social icons. Same opt-in rule.
-	protected String URL_TWITTER;
-	protected String URL_FACEBOOK;
-	protected String URL_YOUTUBE;
-	protected String URL_STEAM;
+
+	/**
+	 * Bottom-left text links, rendered left-to-right in declaration order.
+	 * Each entry needs at minimum a non-empty {@code url} and {@code name};
+	 * everything else is optional. The whole array can be omitted to hide the
+	 * footer links entirely.
+	 */
+	protected List<Link> links;
+
+	/**
+	 * Bottom-right social icons, keyed by the well-known network identifier
+	 * (facebook, twitter, youtube, steam). Only services with an entry are
+	 * rendered; missing entries leave no gap because icons lay out right-to-
+	 * left.
+	 */
+	protected Map<String, Social> socials;
+
 	public JObjectContainer() { }
+
+	/** {@code {"url": "...", "tooltip": "...", "name": "Forum"}} */
+	public static class Link {
+		protected String url;
+		protected String tooltip;
+		protected String name;
+	}
+
+	/** {@code {"url": "...", "tooltip": "..."}} */
+	public static class Social {
+		protected String url;
+		protected String tooltip;
+	}
 }
