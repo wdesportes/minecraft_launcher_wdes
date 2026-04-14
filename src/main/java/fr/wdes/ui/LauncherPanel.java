@@ -457,6 +457,11 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 					}
 
 					if(count > 0){
+						// Manual upsert: the Users table has no UNIQUE constraint
+						// on USERNAME so we can't use INSERT OR REPLACE. Wipe the
+						// existing row(s) for this user before the INSERT below
+						// to avoid accumulating duplicates each time the avatar
+						// is refreshed.
 						String deleteSql = "DELETE FROM Users WHERE USERNAME='" + user + "';";
 						PreparedStatement deleteStatement = Launcher.getInstance().db.prepareStatement(deleteSql);
 						deleteStatement.executeUpdate();
@@ -464,6 +469,9 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 						logger.info("Avatar Effacé !!");
 					}
 
+					// INSERT the freshly downloaded avatar (paired with the
+					// DELETE above when count > 0; on the very first download
+					// for this user there's nothing to delete).
 					String sql = "INSERT INTO Users (ID,USERNAME,ETAG,AVATAR) " +"VALUES (NULL,'" + user + "', '"+connection.getHeaderField("Etag")+"', ? );";
 					PreparedStatement statement = Launcher.getInstance().db.prepareStatement(sql);
 					statement.setBytes(1, BufferedImageToByteArray(image));

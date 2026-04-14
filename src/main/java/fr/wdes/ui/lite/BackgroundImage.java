@@ -26,7 +26,9 @@
  */
 package fr.wdes.ui.lite;
 
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +36,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -69,14 +72,25 @@ public class BackgroundImage extends JLabel {
 
 	/**
 	 * Re-reads the fonds directory and updates the displayed background.
-	 * Safe to call from any thread; image loading and Gaussian blur run off
-	 * the EDT and the icon swap is dispatched back to the EDT.
+	 * Safe to call from any thread; image loading, Gaussian blur and scaling
+	 * all run off the EDT and the resulting fully-rendered BufferedImage is
+	 * swapped in on the EDT. We scale into a BufferedImage explicitly rather
+	 * than going through {@link Image#getScaledInstance} so the blurred pixels
+	 * are guaranteed to be rendered before the icon is shown.
 	 */
 	public void refresh() {
 		new Thread(new Runnable() {
 			public void run() {
-				final BufferedImage img = getBackgroundImage();
-				final Image scaled = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+				final BufferedImage src = getBackgroundImage();
+				final BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+				final Graphics2D g = scaled.createGraphics();
+				try {
+					g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+					g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+					g.drawImage(src, 0, 0, width, height, null);
+				} finally {
+					g.dispose();
+				}
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						setIcon(new ImageIcon(scaled));
@@ -88,15 +102,7 @@ public class BackgroundImage extends JLabel {
 	}
 
 	private BufferedImage getBackgroundImage() {
-		final List<File> images = new ArrayList<File>();
-		File backgroundDir = new File(new File(Launcher.getInstance().getWorkingDirectory(), "fonds"), getTimeFolder());
-		if (backgroundDir.exists()) {
-			for (File f : backgroundDir.listFiles()) {
-				if (f.getName().endsWith(".png") || f.getName().endsWith(".jpg")) {
-					images.add(f);
-				}
-			}
-		}
+		final List<File> images = collectImages();
 		InputStream stream = null;
 		BufferedImage image;
 		try {
@@ -116,7 +122,61 @@ public class BackgroundImage extends JLabel {
 		} finally {
 			IOUtils.closeQuietly(stream);
 		}
-		return new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+		return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+	}
+
+	/**
+	 * Collect candidate background images. Prefer the time-of-day folder
+	 * (nuit / jour / soiree) but fall back to any sibling folder under
+	 * fonds/ when the current one is empty - otherwise running the launcher
+	 * outside of "jour" hours when only daytime fonds were published would
+	 * always show the bundled default.
+	 */
+	private List<File> collectImages() {
+		final List<File> images = new ArrayList<File>();
+		final File fondsDir = new File(Launcher.getInstance().getWorkingDirectory(), "fonds");
+		final File timeDir = new File(fondsDir, getTimeFolder());
+		appendImagesFrom(timeDir, images);
+		if (!images.isEmpty()) {
+			return images;
+		}
+		// Fall back to anything else under fonds/.
+		if (fondsDir.isDirectory()) {
+			final File[] subs = fondsDir.listFiles();
+			if (subs != null) {
+				for (File sub : subs) {
+					if (sub.isDirectory()) {
+						appendImagesFrom(sub, images);
+					} else {
+						addIfImage(sub, images);
+					}
+				}
+			}
+		}
+		return images;
+	}
+
+	private static void appendImagesFrom(File dir, List<File> out) {
+		if (dir == null || !dir.isDirectory()) {
+			return;
+		}
+		final File[] files = dir.listFiles();
+		if (files == null) {
+			return;
+		}
+		for (File f : files) {
+			addIfImage(f, out);
+		}
+	}
+
+	private static void addIfImage(File f, List<File> out) {
+		if (f == null || !f.isFile()) {
+			return;
+		}
+		final String name = f.getName().toLowerCase(Locale.ROOT);
+		if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")) {
+			out.add(f);
+		}
 	}
 
 	private String getTimeFolder() {
