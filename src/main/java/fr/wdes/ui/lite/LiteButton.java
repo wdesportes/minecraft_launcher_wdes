@@ -4,7 +4,6 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.FontMetrics;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -14,21 +13,18 @@ import java.awt.event.MouseListener;
 import javax.swing.JButton;
 
 /**
- * Glass-style button. Translucent dark fill with a subtle top-down highlight
- * and a faint hairline along the very top edge to suggest a glass surface;
- * no hard outer outline so the button feels like part of the same translucent
- * layer as the surrounding fields. Crisp antialiased white text, centred.
+ * Flat translucent button matching the launcher's bottom bar
+ * ({@code Color(30, 30, 30, 180)} fill, no outline, no highlight). Hover and
+ * press shift the alpha so the button still feels interactive without
+ * breaking the flat look. Crisp antialiased white text, centred.
  */
 public class LiteButton extends JButton implements MouseListener {
 	private static final long serialVersionUID = 1L;
-	private static final Color FILL          = new Color(0, 0, 0, 110);
-	private static final Color FILL_HOVER    = new Color(0, 0, 0, 150);
-	private static final Color FILL_PRESS    = new Color(0, 0, 0, 200);
-	private static final Color HIGHLIGHT_TOP = new Color(255, 255, 255, 60);
-	private static final Color HIGHLIGHT_BOT = new Color(255, 255, 255, 0);
-	private static final Color GLASS_EDGE    = new Color(255, 255, 255, 80);
-	private static final Color DISABLED_FG   = new Color(220, 220, 220, 110);
-	private static final int   ARC           = 4;
+	private static final Color FILL        = new Color(30, 30, 30, 180);
+	private static final Color FILL_HOVER  = new Color(30, 30, 30, 220);
+	private static final Color FILL_PRESS  = new Color(15, 15, 15, 230);
+	private static final Color DISABLED_FG = new Color(220, 220, 220, 110);
+	private static final int   ARC         = 4;
 
 	private boolean clicked = false;
 	private boolean hover = false;
@@ -61,22 +57,9 @@ public class LiteButton extends JButton implements MouseListener {
 				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.55f));
 			}
 
-			// Fill
-			final Color fill = clicked ? FILL_PRESS : (hover ? FILL_HOVER : FILL);
-			g2.setColor(fill);
+			// Single flat fill, same colour family as bottomRectangle.
+			g2.setColor(clicked ? FILL_PRESS : (hover ? FILL_HOVER : FILL));
 			g2.fillRoundRect(0, 0, w, h, ARC, ARC);
-
-			// Glass top-down highlight: stronger on hover, fades to nothing
-			// halfway down the button.
-			final Color top = hover && enabled
-				? new Color(255, 255, 255, 90)
-				: HIGHLIGHT_TOP;
-			g2.setPaint(new GradientPaint(0, 0, top, 0, h / 2f, HIGHLIGHT_BOT));
-			g2.fillRoundRect(0, 0, w, h / 2, ARC, ARC);
-
-			// Hairline along the top edge to suggest a glass meniscus.
-			g2.setColor(GLASS_EDGE);
-			g2.drawLine(ARC / 2, 0, w - ARC / 2 - 1, 0);
 
 			// Text
 			g2.setComposite(previous);
