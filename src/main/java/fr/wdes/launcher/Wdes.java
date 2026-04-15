@@ -112,14 +112,18 @@ public class Wdes extends JFrame {
             System.out.println("Version : "+JAVA_VERSION);
             System.exit(0);
         }
-        setSize(854, 480);
+        // Match LauncherPanel.FRAME_WIDTH / FRAME_HEIGHT (880 / 520) so
+        // frame.pack() in Launcher.initializeFrame() doesn't resize or
+        // shift the window when the splash is swapped out for the real
+        // launcher panel - visually, the window stays put.
+        setSize(880, 520);
         setDefaultCloseOperation(3);
 
         // Replace the legacy white JTextArea boot screen with a glassy
         // splash showing the bundled blurred background + a single
         // rolling status line. Older log lines still go to stdout for
         // debugging so nothing is actually lost.
-        splash = new SplashPanel(854, 480);
+        splash = new SplashPanel(880, 520);
         add(splash);
         setLocationRelativeTo(null);
         setVisible(true);
