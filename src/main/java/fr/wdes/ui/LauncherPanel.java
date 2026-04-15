@@ -95,7 +95,10 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 	private JLabel errorLabel = new JLabel();
 	Font largerMinecraft;
 	JLabel bottomRectangle = new JLabel();
-    JLabel logo = new JLabel();
+    // Painted text wordmark - same look as the boot SplashPanel for visual
+    // continuity. Replaces the previous JLabel that fetched a per-server
+    // PNG from <URL_LOGO_BASE>/logos/<uuid>.png (the getLogo path).
+    fr.wdes.ui.lite.LogoLabel logo = new fr.wdes.ui.lite.LogoLabel("WdesLaunchers", 32f);
 	JCheckBox remember = new fr.wdes.ui.lite.LiteCheckBox("Retenir");
     private static final URL minimizeIcon = Launcher.class.getResource("/fr/wdes/ressources/minimize.png");
     private static final URL optionsIcon = Launcher.class.getResource("/fr/wdes/ressources/options.png");
@@ -316,15 +319,7 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
  			bottomRectangle.setBackground(new Color(30, 30, 30, 180));
  			bottomRectangle.setOpaque(true);
   	        logo.setBounds(FRAME_WIDTH / 2 - 200, 35, 400, 109);
-
-
-
-
-  	        try {
-				setIcon(logo,getLogo(Launcher.getInstance().uuid), logo.getWidth(), logo.getHeight());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+  	        // Painted text logo - no remote fetch needed.
 
 
   	        launcherhome.add(logo);
@@ -415,6 +410,42 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 		if (autoFilledUsername != null) {
 			if (loginbtn != null) loginbtn.setVisible(!recognised);
 			if (gamebtn  != null) gamebtn.setVisible(recognised);
+		}
+	}
+
+	/**
+	 * Synchronous read of the cached avatar blob for {@code username} from
+	 * the SQLite {@code Users} table. Used at panel-construction time to
+	 * skip the default-face flicker for returning users. Returns null if
+	 * there's no cached row, the blob can't be decoded, or anything else
+	 * goes wrong - the caller falls back to the bundled default in that
+	 * case. Quietly ignores all errors because this is just an optimisation.
+	 */
+	private static BufferedImage loadCachedAvatarBlocking(final String username) {
+		if (username == null || username.isEmpty()) {
+			return null;
+		}
+		try {
+			final Statement s = Launcher.getInstance().db.createStatement();
+			try {
+				final ResultSet r = s.executeQuery("SELECT AVATAR FROM Users WHERE USERNAME='" + username.replace("'", "''") + "' LIMIT 1");
+				try {
+					if (!r.next()) {
+						return null;
+					}
+					final byte[] bytes = r.getBytes("AVATAR");
+					if (bytes == null || bytes.length == 0) {
+						return null;
+					}
+					return ImageIO.read(new ByteArrayInputStream(bytes));
+				} finally {
+					r.close();
+				}
+			} finally {
+				s.close();
+			}
+		} catch (Exception ignored) {
+			return null;
 		}
 	}
 
@@ -853,17 +884,26 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
             autoFilledUsername = auth.getUsername();
             this.logininput.setText(auth.getUsername());
             this.progressBar.setVisible(false);
-				// Create callable
+				// Async fetch (HEAD-with-If-None-Match against minotar.net,
+				// then DB cache hit on 304, full GET on 200) - same path as
+				// before, kept for refresh semantics.
 				CallbackTask callback = getImage(auth.getUsername());
-
-				// Start callable
 				FutureTask<BufferedImage> futureImage = new FutureTask<BufferedImage>(callback);
 				Thread downloadThread = new Thread(futureImage, "Avatar");
 				downloadThread.setDaemon(true);
 				downloadThread.start();
 
-				// Create future image, using default mc avatar for now
-				FutureImage userImage = new FutureImage(getDefaultImage());
+				// Avoid the default-face flicker for returning users by
+				// preloading whatever avatar bytes the SQLite cache has for
+				// this username RIGHT NOW (synchronous, single SELECT). The
+				// async refresh above will overwrite it once it completes if
+				// the etag changed - but until then the FutureImage already
+				// shows the user's real face, not the generic placeholder.
+				BufferedImage initial = loadCachedAvatarBlocking(auth.getUsername());
+				if (initial == null) {
+					initial = getDefaultImage();
+				}
+				FutureImage userImage = new FutureImage(initial);
 				callback.setCallback(userImage);
 
 				DynamicButton userButton = new DynamicButton( userImage, 44, auth.getUsername());
