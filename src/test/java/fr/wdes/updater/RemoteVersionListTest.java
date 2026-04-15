@@ -79,6 +79,62 @@ public class RemoteVersionListTest {
     }
 
     @Test
+    public void completeVersionParsesModern114Arguments() {
+        // Trimmed real 1.14.json. The launcher used to bail with "Can't
+        // run version, missing minecraftArguments" on this shape because
+        // it only spoke the pre-1.13 flat-string dialect; this test pins
+        // down that the new JsonObject field hydrates and exposes the
+        // mixed string/conditional "game" array.
+        final String json = "{\n" +
+                "  \"id\": \"1.14\",\n" +
+                "  \"type\": \"release\",\n" +
+                "  \"mainClass\": \"net.minecraft.client.main.Main\",\n" +
+                "  \"time\": \"2019-04-23T14:52:44+00:00\",\n" +
+                "  \"releaseTime\": \"2019-04-23T14:52:44+00:00\",\n" +
+                "  \"arguments\": {\n" +
+                "    \"game\": [\n" +
+                "      \"--username\", \"${auth_player_name}\",\n" +
+                "      \"--version\", \"${version_name}\",\n" +
+                "      \"--gameDir\", \"${game_directory}\",\n" +
+                "      {\n" +
+                "        \"rules\": [{\"action\": \"allow\", \"features\": {\"is_demo_user\": true}}],\n" +
+                "        \"value\": \"--demo\"\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"rules\": [{\"action\": \"allow\", \"features\": {\"has_custom_resolution\": true}}],\n" +
+                "        \"value\": [\"--width\", \"${resolution_width}\", \"--height\", \"${resolution_height}\"]\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    \"jvm\": [\"-Djava.library.path=${natives_directory}\"]\n" +
+                "  }\n" +
+                "}";
+        final fr.wdes.versions.CompleteVersion v =
+            new com.google.gson.GsonBuilder()
+                .registerTypeAdapterFactory(new LowerCaseEnumTypeAdapterFactory())
+                .registerTypeAdapter(java.util.Date.class, new DateTypeAdapter())
+                .create()
+                .fromJson(json, fr.wdes.versions.CompleteVersion.class);
+        assertNotNull(v);
+        // Legacy field is absent - this used to throw the launcher off.
+        org.junit.Assert.assertNull(v.getMinecraftArguments());
+        assertNotNull("arguments must hydrate from JSON", v.getArguments());
+        assertTrue(v.getArguments().has("game"));
+        final JsonArray game = v.getArguments().getAsJsonArray("game");
+        // Plain strings and the two conditional objects are all present.
+        assertEquals(8, game.size());
+        // First six entries are plain string args.
+        assertEquals("--username", game.get(0).getAsString());
+        assertEquals("${auth_player_name}", game.get(1).getAsString());
+        // Seventh is the demo conditional - rules + single string value.
+        assertTrue(game.get(6).isJsonObject());
+        final JsonObject demo = game.get(6).getAsJsonObject();
+        assertEquals("--demo", demo.get("value").getAsString());
+        // Eighth is the resolution conditional - rules + array value.
+        assertTrue(game.get(7).isJsonObject());
+        assertTrue(game.get(7).getAsJsonObject().get("value").isJsonArray());
+    }
+
+    @Test
     public void completeVersionParsesDownloadsClientBlock() {
         final String json = "{\n" +
                 "  \"id\": \"1.7.10\",\n" +
