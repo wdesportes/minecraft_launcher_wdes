@@ -22,6 +22,15 @@ public class CompleteVersion implements Version {
 	protected Date releaseTime;
 	protected ReleaseType type;
 	protected String minecraftArguments;
+	/**
+	 * New argument shape introduced in Minecraft 1.13: {@code arguments.game}
+	 * is a mixed array of plain strings and {@code {"rules":[...], "value":...}}
+	 * conditional objects. Kept as a raw {@link com.google.gson.JsonObject}
+	 * because Gson's generic deserialisation doesn't handle the polymorphism
+	 * cleanly; {@link fr.wdes.GameLauncher} walks it manually at launch time.
+	 * Nullable on pre-1.13 versions (those still populate {@link #minecraftArguments}).
+	 */
+	protected com.google.gson.JsonObject arguments;
 	protected List<Library> libraries;
 	protected String mainClass;
 	protected int minimumLauncherVersion;
@@ -264,6 +273,10 @@ public class CompleteVersion implements Version {
 
 	public DownloadsInfo getDownloads() {
 		return downloads;
+	}
+
+	public com.google.gson.JsonObject getArguments() {
+		return arguments;
 	}
 
 	/**

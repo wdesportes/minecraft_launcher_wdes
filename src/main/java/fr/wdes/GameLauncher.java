@@ -102,16 +102,60 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
     }
 
     private String[] getMinecraftArguments(final CompleteVersion version, final Profile selectedProfile, final File gameDirectory, final File assetsDirectory, final AuthenticationService authentication) {
-        if(version.getMinecraftArguments() == null) {
-        	logger.warn("Can't run version, missing minecraftArguments");
+        final boolean hasLegacy = version.getMinecraftArguments() != null;
+        final boolean hasModern = version.getArguments() != null && version.getArguments().has("game");
+        if (!hasLegacy && !hasModern) {
+            logger.warn("Can't run version, missing minecraftArguments and arguments.game");
             setWorking(false);
             return null;
         }
 
-        final Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = buildPlaceholderMap(version, selectedProfile, gameDirectory, assetsDirectory, authentication);
         final StrSubstitutor substitutor = new StrSubstitutor(map);
-        final String[] split = version.getMinecraftArguments().split(" ");
-        // ----DEBUT V2----
+
+        final String[] split;
+        if (hasLegacy) {
+            split = version.getMinecraftArguments().split(" ");
+        } else {
+            // Minecraft 1.13+: arguments.game is a mixed array of strings and
+            // conditional objects ({rules, value}). Plain strings are
+            // always emitted; conditional entries are only included when
+            // their feature toggles match the current launch context (is
+            // the user in demo mode, has a custom resolution been set...).
+            final java.util.List<String> collected = new java.util.ArrayList<String>();
+            final com.google.gson.JsonElement gameArr = version.getArguments().get("game");
+            if (gameArr != null && gameArr.isJsonArray()) {
+                for (com.google.gson.JsonElement el : gameArr.getAsJsonArray()) {
+                    if (el.isJsonPrimitive()) {
+                        collected.add(el.getAsString());
+                    } else if (el.isJsonObject()) {
+                        final com.google.gson.JsonObject obj = el.getAsJsonObject();
+                        if (rulesAllow(obj.getAsJsonArray("rules"), selectedProfile, authentication)) {
+                            final com.google.gson.JsonElement value = obj.get("value");
+                            if (value == null) {
+                                continue;
+                            } else if (value.isJsonPrimitive()) {
+                                collected.add(value.getAsString());
+                            } else if (value.isJsonArray()) {
+                                for (com.google.gson.JsonElement v : value.getAsJsonArray()) {
+                                    if (v.isJsonPrimitive()) collected.add(v.getAsString());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            split = collected.toArray(new String[collected.size()]);
+        }
+        for (int i = 0; i < split.length; i++) {
+            split[i] = substitutor.replace(split[i]);
+        }
+        return split;
+    }
+
+    /** Collate every placeholder the version JSON might reference. */
+    private Map<String, String> buildPlaceholderMap(final CompleteVersion version, final Profile selectedProfile, final File gameDirectory, final File assetsDirectory, final AuthenticationService authentication) {
+        final Map<String, String> map = new HashMap<String, String>();
         map.put("auth_access_token", authentication.getSessionToken());
         // Minecraft 1.7+ deserialises --userProperties / --userProperty_map
         // with Gson.fromJson(arg, Map.class) and then immediately calls
@@ -127,26 +171,20 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
         map.put("user_property_map", userProps == null
             ? "{}"
             : new GsonBuilder().registerTypeAdapter(PropertyMap.class, new PropertyMap.Serializer()).create().toJson(userProps));
-        // ----FIN   V2----
 
-        //DEBUT V1
         map.put("auth_username", authentication.getUsername());
         map.put("auth_session", authentication.getSessionToken() == null && authentication.canPlayOnline() ? "-" : authentication.getSessionToken());
 
         if(authentication.getSelectedProfile() != null) {
             map.put("auth_player_name", authentication.getUsername());
             map.put("auth_uuid", authentication.getSelectedProfile().getId());
-            // ----DEBUT V2----
             //LEGACY("legacy"),  MOJANG("mojang");
             map.put("user_type", "mojang");
-            // ----FIN   V2----
         }
         else {
             map.put("auth_player_name", "Player");
             map.put("auth_uuid", new UUID(0L, 0L).toString());
-            // ----DEBUT V2----
             map.put("user_type", "legacy");
-            // ----FIN   V2----
         }
 
         map.put("profile_name", selectedProfile.getName());
@@ -154,15 +192,90 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
 
         map.put("game_directory", gameDirectory.getAbsolutePath());
         map.put("game_assets", assetsDirectory.getAbsolutePath());
-        // ----DEBUT V2----
         map.put("assets_root", new File(gameDirectory.getAbsolutePath(), "assets").getAbsolutePath());
         map.put("assets_index_name", version.getAssets() == null ? "legacy" : version.getAssets());
-        // ----FIN   V2----
-        //  FIN V1
-        for(int i = 0; i < split.length; i++)
-            split[i] = substitutor.replace(split[i]);
 
-        return split;
+        // 1.13+ additions.
+        map.put("version_type", version.getType() == null ? "release" : version.getType().getName());
+        // Microsoft auth fields - empty for the legacy / offline flow,
+        // present so any unconditional ${clientid} / ${auth_xuid} tokens
+        // in the version JSON don't leak literal ${...} into the argv.
+        map.put("clientid", "");
+        map.put("auth_xuid", "");
+        // Natives / classpath - populated per-launch below, but also
+        // exposed as placeholders so version JSONs that mention them in
+        // arguments.jvm (not yet consumed here) don't fail to substitute.
+        if (nativeDir != null) {
+            map.put("natives_directory", nativeDir.getAbsolutePath());
+        }
+        map.put("launcher_name", "wdes-launcher");
+        map.put("launcher_version", "2.0.0");
+
+        final Profile.Resolution res = selectedProfile.getResolution();
+        if (res != null) {
+            map.put("resolution_width",  String.valueOf(res.getWidth()));
+            map.put("resolution_height", String.valueOf(res.getHeight()));
+        }
+        return map;
+    }
+
+    /**
+     * Evaluate a 1.13+ {@code rules} array for an {@code arguments.game}
+     * conditional entry. Returns true if the entry should be included.
+     * Keeps the implementation tiny - only the two {@code features} we
+     * actually care about: demo mode and custom resolution.
+     */
+    private boolean rulesAllow(final com.google.gson.JsonArray rules, final Profile profile, final AuthenticationService authentication) {
+        if (rules == null || rules.size() == 0) {
+            return true;
+        }
+        boolean allow = false;
+        for (com.google.gson.JsonElement el : rules) {
+            if (!el.isJsonObject()) continue;
+            final com.google.gson.JsonObject rule = el.getAsJsonObject();
+            final String action = rule.has("action") ? rule.get("action").getAsString() : "allow";
+            final boolean matches;
+            if (rule.has("features") && rule.get("features").isJsonObject()) {
+                matches = featuresMatch(rule.getAsJsonObject("features"), profile, authentication);
+            } else {
+                // OS rules (os.name = windows / linux / osx) - evaluate
+                // for completeness so the JVM block, if ever consumed, works.
+                matches = rule.has("os") ? osRuleMatches(rule.getAsJsonObject("os")) : true;
+            }
+            if (matches) {
+                allow = "allow".equalsIgnoreCase(action);
+            }
+        }
+        return allow;
+    }
+
+    private boolean featuresMatch(final com.google.gson.JsonObject features, final Profile profile, final AuthenticationService authentication) {
+        for (java.util.Map.Entry<String, com.google.gson.JsonElement> e : features.entrySet()) {
+            final String key = e.getKey();
+            final boolean expected = e.getValue().isJsonPrimitive() && e.getValue().getAsBoolean();
+            final boolean actual;
+            if ("is_demo_user".equals(key)) {
+                actual = authentication.getSelectedProfile() == null;
+            } else if ("has_custom_resolution".equals(key)) {
+                actual = profile.getResolution() != null;
+            } else {
+                // Unknown feature (has_quick_plays_support, etc.) - treat
+                // as false so we don't spuriously include flags we can't
+                // honour.
+                actual = false;
+            }
+            if (actual != expected) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean osRuleMatches(final com.google.gson.JsonObject os) {
+        if (!os.has("name")) return true;
+        final String wanted = os.get("name").getAsString();
+        final OperatingSystem current = OperatingSystem.getCurrentPlatform();
+        return wanted.equalsIgnoreCase(current.getName());
     }
 
     protected float getProgress() {
