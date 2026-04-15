@@ -24,12 +24,31 @@ I8,        8        ,8I         88                            88                
     public static final String USER_AGENT            = "Mozilla/5.0 (WdesAuth; fr-FR) Gecko/20100316 Firefox/3.6.2";
     public static final String LIBRARY_DOWNLOAD_BASE = "https://libraries.minecraft.net/";// {groupId}/{artifactId}/{version}/{artifactId}-{version}.jar
     public static final String URL_CONFIGS           = "http://wdeslaunchers.wdes.fr/configs/";
-    public static final String URL_DOWNLOAD_VERSIONS_BASE     = "http://wdeslaunchers.wdes.fr/";// versions/{version}/{version}.jar or versions/versions.json
-    // URL_DOWNLOAD_INDEXES_BASE was removed: asset indexes are now
-    // hash-addressed and discovered via CompleteVersion.assetIndex.url
-    // out of the per-version JSON we get from piston-meta.mojang.com,
-    // with a local cache under <workingDir>/assets/indexes/<id>.json
-    // for offline reuse - so the separate constant had no caller.
+    /**
+     * Operator mirror root. The launcher expects the following layout
+     * underneath this base and will GET each path on demand:
+     * <ul>
+     *   <li>{@code versions/versions.json} - optional, merged into the
+     *       Mojang manifest to surface modded / custom ids in the
+     *       dropdown (operator entries take precedence on id collision);</li>
+     *   <li>{@code versions/<id>/<id>.json} - per-version JSON for
+     *       operator-owned ids (either because they're mirror-only or
+     *       because the operator shadowed a vanilla id in versions.json);</li>
+     *   <li>{@code versions/<id>/<id>.jar} - jar fallback when the
+     *       per-version JSON has no {@code downloads.client.url}
+     *       (legacy / modded format);</li>
+     *   <li>{@code indexes/<id>.json} - asset-index fallback when the
+     *       per-version JSON has no {@code assetIndex.url} (same
+     *       legacy reason). This used to live at a separate
+     *       URL_DOWNLOAD_INDEXES_BASE - it's now derived from the same
+     *       base because every known operator served both on one host.</li>
+     * </ul>
+     * None of these paths are required for vanilla Mojang versions -
+     * those are fetched from piston-meta / piston-data.mojang.com. The
+     * mirror only matters for entries the operator publishes in
+     * versions/versions.json.
+     */
+    public static final String URL_DOWNLOAD_VERSIONS_BASE     = "http://wdeslaunchers.wdes.fr/";
     /**
      * Mojang's modern launcher meta endpoint. Returns the version manifest
      * (latest release/snapshot ids + array of {@code {id, type, url, time,
