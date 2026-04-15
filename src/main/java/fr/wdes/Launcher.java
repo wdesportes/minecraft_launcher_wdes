@@ -224,8 +224,10 @@ public class Launcher {
         	logger.info("WdesLaunchers DB : "+this.sqlitedb.toPath());
             statement = db.createStatement();
 
-            String query = "CREATE TABLE IF NOT EXISTS Launchers(ID INTEGER PRIMARY KEY AUTOINCREMENT, UUID TEXT, DATE TEXT, LOGO BLOB);";
-            statement.execute(query);
+            // The "Launchers" table that backed the per-server logo cache
+            // is no longer created on new installs - the image-based logo
+            // has been replaced by a painted text wordmark. Existing
+            // databases keep the orphan table; nothing reads it.
             String query2 = "CREATE TABLE IF NOT EXISTS Users(ID INTEGER PRIMARY KEY AUTOINCREMENT, USERNAME TEXT, ETAG TEXT, AVATAR BLOB);";
             statement.execute(query2);
 

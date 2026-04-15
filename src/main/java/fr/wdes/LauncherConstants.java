@@ -39,7 +39,12 @@ I8,        8        ,8I         88                            88                
      */
     public static final String URL_MOJANG_VERSION_MANIFEST    = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
     public static final String URL_ASSETS_DOWNLOAD_BASE       = "https://resources.download.minecraft.net/";// {hash[0:2]}/{hash}
-    public static final String URL_LOGO_BASE         = "http://wdeslaunchers.wdes.fr/";// logos/{uuid}.png
+    // URL_LOGO_BASE was removed: the per-server logo image fetched from
+    // <base>/logos/<uuid>.png has been replaced by a painted text wordmark
+    // (see fr.wdes.ui.lite.LogoLabel) on both the splash and the home page.
+    // The associated SQLite "Launchers" cache table is no longer created
+    // on new installs (see Launcher.java); existing user databases keep
+    // their orphan table - harmless and not worth a migration.
     public static final String URL_FONDS_DOWNLOAD    = Launcher.getInstance().config.URL_FONDS_DOWNLOAD;
     public static final String PLACEHOLDER_LOGIN             = Launcher.getInstance().config.PLACEHOLDER_LOGIN;
     public static final String PLACEHOLDER_PASSD             = Launcher.getInstance().config.PLACEHOLDER_PASSD;

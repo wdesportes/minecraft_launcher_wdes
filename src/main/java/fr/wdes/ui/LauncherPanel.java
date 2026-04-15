@@ -456,13 +456,6 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 			throw new RuntimeException("Erreur de lecture de l'image par défault");
 		}
 	}
-	private static BufferedImage getDefaultLogo() {
-		try {
-			return ImageIO.read(Launcher.class.getResourceAsStream("/fr/wdes/ressources/logo.png"));
-		} catch (IOException e) {
-			throw new RuntimeException("Erreur de lecture de l'image par défault");
-		}
-	}
 	private static class CallbackTask implements Callable<BufferedImage> {
 		private final Callable<BufferedImage> task;
 		private volatile ImageCallback callback;
@@ -541,7 +534,6 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
         	else if(connection.getResponseCode() == 200){
         		if(count > 0){
         			// HEAD has no body; re-open as GET to actually fetch the new avatar.
-        			// Mirrors getLogo() below.
         			connection = (HttpURLConnection) url.openConnection();
         		}
         		logger.info("Avatar Téléchargé !!");
@@ -600,77 +592,6 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
 			}
 		});
 	}
-	private BufferedImage getLogo(final String uuid) throws Exception {
-
-				URL url = new URL(LauncherConstants.URL_LOGO_BASE + "/logos/" + uuid + ".png");
-				byte[] LOGO = null;
-				BufferedImage image = null;
-
-
-
-			Statement s = Launcher.getInstance().db.createStatement();
-			ResultSet r = s.executeQuery("SELECT COUNT(ID) AS rowcount FROM Launchers WHERE UUID='"+uuid+"'");
-			r.next();
-			int count = r.getInt("rowcount") ;
-			r.close() ;
-
-			logger.info("[Logo] WdesLaunchers has " + count + " row(s).");
-
-
-                HttpURLConnection connection = null;
-             if(count == 0){
-            	 connection = (HttpURLConnection) url.openConnection();
-             }
-             else{
-            	 String query = "SELECT * FROM Launchers WHERE UUID='"+uuid+"'";
-                 Statement statement = Launcher.getInstance().db.createStatement();
-                 ResultSet rslt=statement.executeQuery(query);
-                 logger.info("[Logo] Récupération du logo du serveur : " + uuid + "...");
-                     rslt.next();
-                     String  DATE = rslt.getString("DATE");
-                     LOGO=rslt.getBytes("LOGO");
-            	connection = Http.performHead(url, Launcher.getInstance().getProxy(),"If-Modified-Since", DATE);
-             }
-        	if(connection.getResponseCode() == 304 && count == 1){
-        		logger.info("[Logo] Téléchargé depuis la base de données !!");
-        		InputStream in = new ByteArrayInputStream(LOGO);
-        		image = ImageIO.read(in);
-        	}
-        	else if(connection.getResponseCode() == 200){
-        		connection = (HttpURLConnection) url.openConnection();
-        		InputStream stream = new BufferedInputStream(connection.getInputStream());
-			      image = ImageIO.read(stream);
-					if (image == null) {
-						logger.info("[Logo] Aucun logo n'a pu être téléchargé, le logo par défault serra utilisé !!");
-						return getDefaultLogo();
-					}
-
-					if(count == 1){
-						String sql = "DELETE FROM Launchers WHERE UUID='" + uuid + "';";
-						PreparedStatement statement = Launcher.getInstance().db.prepareStatement(sql);
-						statement.executeUpdate();
-						statement.close();
-						logger.info("Logo Effacé !!");
-					}
-
-					String sql = "INSERT INTO Launchers (ID,UUID,DATE,LOGO) VALUES (NULL,'" + uuid + "', '"+connection.getHeaderField("Last-Modified")+"', ? );";
-
-					PreparedStatement statement = Launcher.getInstance().db.prepareStatement(sql);
-					statement.setBytes(1, BufferedImageToByteArray(image));
-					statement.executeUpdate();
-					statement.close();
-					logger.info("Logo Téléchargé !!");
-
-            }
-        	connection.disconnect();
-        	return image;
-
-
-
-
-			}
-
-
     public LauncherPanel(final Launcher launcher) {
         this.launcher = launcher;
         cardLayout = new CardLayout();
