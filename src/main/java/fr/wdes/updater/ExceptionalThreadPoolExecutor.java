@@ -22,7 +22,7 @@ public class ExceptionalThreadPoolExecutor extends ThreadPoolExecutor {
             super(runnable, value);
         }
 
-      
+
         protected void done() {
             try {
                 this.get();
@@ -38,13 +38,13 @@ public class ExceptionalThreadPoolExecutor extends ThreadPoolExecutor {
 
     }
 
-    
+
     protected void afterExecute(final Runnable r, Throwable t) {
         super.afterExecute(r, t);
 
         if(t == null && r instanceof Future)
             try {
-               
+
 				final Future<?> future = (Future<?>) r;
                 if(future.isDone() || future.isCancelled())
                     future.get();
@@ -54,12 +54,12 @@ public class ExceptionalThreadPoolExecutor extends ThreadPoolExecutor {
             }
     }
 
-    
+
     protected <T> RunnableFuture<T> newTaskFor(final Callable<T> callable) {
         return new ExceptionalFutureTask<T>(callable);
     }
 
-  
+
     protected <T> RunnableFuture<T> newTaskFor(final Runnable runnable, final T value) {
         return new ExceptionalFutureTask<T>(runnable, value);
     }

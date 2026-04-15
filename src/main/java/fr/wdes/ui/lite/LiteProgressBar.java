@@ -20,7 +20,7 @@ public class LiteProgressBar extends JProgressBar implements Transparent {
 	@Override
 	public void paint(Graphics g) {
 		Graphics2D g2d = (Graphics2D) transparency.setup(g);
-		
+
 		g2d.clearRect(0, 0, getWidth(), getHeight());
 
 		// Draw bar

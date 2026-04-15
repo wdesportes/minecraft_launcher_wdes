@@ -115,7 +115,7 @@ public class DownloadJob {
                 if(!ignoreFailures)
                     failures.add(downloadable);
                 logger.warn("Abandon : " + downloadable.getUrl() + " Tâche :'" + name + "'");
-                
+
             }
             else
                 try {
@@ -124,7 +124,7 @@ public class DownloadJob {
                 	Launcher.getInstance().getLauncherPanel().getProgressBar().setString("Téléchargement de :" + downloadable.getName() + " =>'" + this.name );
                     final String result = downloadable.download();
                     successful.add(downloadable);
-                    
+
                     logger.info("Téléchargé : " + downloadable.getUrl() + " Tâche : '" + name + "'" + ": " + result);
                 }
                 catch(final Throwable t) {
@@ -151,7 +151,7 @@ public class DownloadJob {
         else {
             final int threads = executorService.getMaximumPoolSize();
             remainingThreads.set(threads);
-            
+
             logger.info("Tâche : '" + name + "' démarrée (" + threads + " threads, " + allFiles.size() + " fichiers)");
             for(int i = 0; i < threads; i++)
                 executorService.submit(new Runnable() {

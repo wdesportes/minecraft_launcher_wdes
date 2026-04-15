@@ -43,7 +43,7 @@ public class ConsoleTab extends JScrollPane {
         final Document document = console.getDocument();
         final JScrollBar scrollBar = getVerticalScrollBar();
         boolean shouldScroll = false;
-        
+
         if(getViewport().getView() == console)
             shouldScroll = scrollBar.getValue() + scrollBar.getSize().getHeight() + MONOSPACED.getSize() * 4 > scrollBar.getMaximum();
         try {

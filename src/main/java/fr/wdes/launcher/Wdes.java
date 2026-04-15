@@ -36,9 +36,9 @@ public class Wdes extends JFrame {
 	private static final Font MONOSPACED = new Font("Monospaced", 0, 12);
     public static double JAVA_VERSION = Double.parseDouble(System.getProperty("java.specification.version"));
     public static void main(final String[] args) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-    	
-    
-    	
+
+
+
         System.setProperty("java.net.preferIPv4Stack", "true");
 
         final OptionParser optionParser = new OptionParser();
@@ -91,15 +91,15 @@ public class Wdes extends JFrame {
 
             });
         }
- 
 
-       
+
+
         final List<String> strings = optionSet.valuesOf(nonOptions);
         final String[] remainderArgs = strings.toArray(new String[strings.size()]);
-        
+
        new Wdes( proxy, passwordAuthentication, remainderArgs);
-        
-          
+
+
     }
 
     public static boolean stringHasValue(final String string) {
@@ -116,8 +116,8 @@ public class Wdes extends JFrame {
     public Wdes(final Proxy proxy, final PasswordAuthentication proxyAuth, final String[] remainderArgs) {
         super("[WdesLaunchers] Lancement de votre launcher en cours...");
         this.setUndecorated(true);
-        
-  
+
+
     	if (JAVA_VERSION <= 1.6) {
     		JOptionPane.showMessageDialog(this,
     			    "Version de java détéctée : "+JAVA_VERSION+", Version 1.7 minimum !!.\nMerci de mettre a jour java : java.com.",
@@ -134,7 +134,7 @@ public class Wdes extends JFrame {
         textArea.setEditable(false);
         textArea.setFont(MONOSPACED);
         ((DefaultCaret) textArea.getCaret()).setUpdatePolicy(1);
-        
+
         scrollPane = new JScrollPane(textArea);
         scrollPane.setBorder(null);
         scrollPane.setVerticalScrollBarPolicy(22);
@@ -151,7 +151,7 @@ public class Wdes extends JFrame {
         println(new StringBuilder().append("System.getProperty('java.vendor') == '").append(System.getProperty("java.vendor")).append("'").toString());
         println(new StringBuilder().append("System.getProperty('sun.arch.data.model') == '").append(System.getProperty("sun.arch.data.model")).append("'").toString());
         println("");
-        
+
         new Launcher(this,"33a86c10-1e71-4e51-83b5-bdf218f29b97","wdeslaunchers", proxy, proxyAuth, remainderArgs);
 
 

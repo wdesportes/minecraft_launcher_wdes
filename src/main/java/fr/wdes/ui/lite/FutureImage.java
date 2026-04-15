@@ -44,7 +44,7 @@ public class FutureImage extends Image implements ImageCallback {
 
 	/**
 	 * Future image and empty image must be the same height and width
-	 * 
+	 *
 	 * @param future
 	 * @param empty
 	 */

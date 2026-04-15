@@ -20,17 +20,17 @@ public class PropertyMap
   extends ForwardingMultimap<String, Property>
 {
 	protected final Multimap<String, Property> properties;
-  
+
   public PropertyMap()
   {
     this.properties = LinkedHashMultimap.create();
   }
-  
+
   protected Multimap<String, Property> delegate()
   {
     return this.properties;
   }
-  
+
   public static class Serializer
     implements JsonSerializer<PropertyMap>, JsonDeserializer<PropertyMap>
   {
@@ -72,14 +72,14 @@ public class PropertyMap
       }
       return result;
     }
-    
+
     public JsonElement serialize(PropertyMap src, Type typeOfSrc, JsonSerializationContext context)
     {
       JsonArray result = new JsonArray();
       for (Property property : src.values())
       {
         JsonObject object = new JsonObject();
-        
+
         object.addProperty("name", property.getName());
         object.addProperty("value", property.getValue());
         if (property.hasSignature()) {

@@ -65,8 +65,8 @@ public class PlayerInfoPanel extends JPanel implements RefreshedProfilesListener
         }
         else {
             welcomeText.setText("<html>Bienvenue, <b>" + auth.getUsername() + "</b></html>");
-            
-          
+
+
             logOutButton.setEnabled(true);
         }
 

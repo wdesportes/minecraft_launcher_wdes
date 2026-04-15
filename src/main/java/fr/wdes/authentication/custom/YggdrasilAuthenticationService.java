@@ -129,9 +129,9 @@ public class YggdrasilAuthenticationService extends BaseAuthenticationService {
             throw new InvalidCredentialsException("Invalid username");
         if(StringUtils.isBlank(getAccessToken())){
         Launcher.getInstance().getLauncherPanel().getProgressBar().setText("Token invalide merci de vous reconnecter.");
-        throw new InvalidCredentialsException("Invalid access token");	
+        throw new InvalidCredentialsException("Invalid access token");
         }
-            
+
 
         logger.info("Connection avec token d'accès : "+getClientToken());
         Launcher.getInstance().getLauncherPanel().getProgressBar().setWaiting(true);
@@ -147,7 +147,7 @@ public class YggdrasilAuthenticationService extends BaseAuthenticationService {
         setSelectedProfile(response.getSelectedProfile());
 
         fireAuthenticationChangedEvent();
-      
+
     }
 
     @Override
@@ -229,7 +229,7 @@ public class YggdrasilAuthenticationService extends BaseAuthenticationService {
     }
 
 	public JsonElement getUserProperties() {
-		
+
 		return null;
 	}
 }

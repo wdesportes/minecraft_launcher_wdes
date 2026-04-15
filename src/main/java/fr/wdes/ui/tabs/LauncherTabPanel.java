@@ -28,8 +28,8 @@ public class LauncherTabPanel extends JTabbedPane {
     	//setTabPlacement(JTabbedPane.SOUTH_EAST);
         //addTab("Web", blog);
         addTab("Console", console);
-  
-  
+
+
     }
 
 

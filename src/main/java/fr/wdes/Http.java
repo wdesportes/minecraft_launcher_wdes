@@ -49,7 +49,7 @@ public class Http {
 
     public static String performGet(final URL url, final Proxy proxy) throws IOException {
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection(proxy);
-      
+
         connection.setConnectTimeout(15000);
         connection.setReadTimeout(60000);
         connection.setRequestProperty("User-Agent", LauncherConstants.USER_AGENT);
@@ -65,7 +65,7 @@ public class Http {
     }
     public static HttpURLConnection performHead(final URL url, final Proxy proxy,final String name,final String value) throws IOException {
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection(proxy);
-        
+
         connection.setRequestMethod("HEAD");
         connection.setRequestProperty(name, value);
         connection.setConnectTimeout(15000);

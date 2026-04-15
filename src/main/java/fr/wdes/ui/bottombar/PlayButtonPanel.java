@@ -46,17 +46,17 @@ public class PlayButtonPanel extends JPanel implements RefreshedProfilesListener
         if(auth == null || !auth.isLoggedIn() || launcher.getVersionManager().getVersions(profile.getVersionFilter()).isEmpty()) {
             playButton.setEnabled(false);
             playButton.setText("Jouer !");
-            
+
         }
         else if(auth.getSelectedProfile() == null) {
             playButton.setEnabled(true);
             playButton.setText("Play Demo");
-            
+
         }
         else if(auth.canPlayOnline()) {
             playButton.setEnabled(true);
             playButton.setText("Jouer !");
- 
+
         }
         else {
             playButton.setEnabled(true);

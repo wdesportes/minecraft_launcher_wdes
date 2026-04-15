@@ -52,7 +52,7 @@ public class JBouton {
     public int y() {return y;}
     public int h() {return h;}
     public int w() {return w;}
-    
+
     public String getAction() {
         return action;
     }
@@ -65,6 +65,6 @@ public class JBouton {
     public URL getHoverIcon() {
         return hover_icon;
     }
-    
-    
+
+
 }

@@ -64,8 +64,8 @@ public class DynamicButton extends JButton implements MouseListener {
 		setFocusable(false);
 		addMouseListener(this);
 		underLabel.setForeground(Color.WHITE);
-		
-		
+
+
 
 		remove.setTransparency(0F);
 	}

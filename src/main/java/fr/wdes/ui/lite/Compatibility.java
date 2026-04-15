@@ -49,9 +49,9 @@ public class Compatibility {
 			Method setIconImage = Window.class.getMethod("setIconImage", params);
 			setIconImage.invoke(window, image);
 		} catch (Exception e) {
-	
+
 				e.printStackTrace();
-			
+
 		}
 	}
 
@@ -62,9 +62,9 @@ public class Compatibility {
 			Method setExecutable = File.class.getMethod("setExecutable", params);
 			return (Boolean)setExecutable.invoke(file, executable, owner);
 		} catch (Exception e) {
-		
+
 				e.printStackTrace();
-			
+
 		}
 		return false;
 	}

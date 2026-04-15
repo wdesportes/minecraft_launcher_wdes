@@ -29,7 +29,7 @@ public class CompleteVersion implements Version {
 	protected List<Rule> rules;
 	protected volatile boolean synced = false;
     protected String assets;
-	
+
 
     public CompleteVersion() {
     }

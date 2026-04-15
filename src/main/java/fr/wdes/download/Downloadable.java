@@ -112,7 +112,7 @@ public class Downloadable {
       if ((target.getParentFile() != null) && (!target.getParentFile().isDirectory()))
       {
     	  logger.info("Making directory " + target.getParentFile());
-        if ((!target.getParentFile().mkdirs()) && 
+        if ((!target.getParentFile().mkdirs()) &&
           (!target.getParentFile().isDirectory())) {
           throw new RuntimeException("Could not create directory " + target.getParentFile());
         }
@@ -148,7 +148,7 @@ public class Downloadable {
       }
       catch (Exception ignored)
       {
-        
+
         return null;
       }
       finally
@@ -244,7 +244,7 @@ public class Downloadable {
 
     private String getGMT(long lastModified) {
     	DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z", Locale.US);
-    	dateFormat.setTimeZone(TimeZone.getTimeZone("GMT")); 
+    	dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     	String GMT = dateFormat.format(lastModified);
 		return GMT;
 	}
@@ -252,7 +252,7 @@ public class Downloadable {
 	public long getExpectedSize() {
         return expectedSize;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -288,7 +288,7 @@ public class Downloadable {
             connection.setRequestProperty("If-None-Match", localMd5);
         if(localDate != null)
             connection.setRequestProperty("If-Modified-Since", localDate);
-        
+
 
         connection.connect();
 
@@ -304,7 +304,7 @@ public class Downloadable {
         connection.setRequestProperty("Pragma", "no-cache");
         if(localMd5 != null)
             connection.setRequestProperty("If-None-Match", localMd5);
-        
+
 
         connection.connect();
 

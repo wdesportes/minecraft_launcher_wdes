@@ -21,12 +21,12 @@ import com.google.gson.reflect.TypeToken;
 import fr.wdes.authentication.custom.YggdrasilAuthenticationService;
 
 public class AuthenticationDatabase {
-    
+
 
 	public static class Serializer implements JsonDeserializer<AuthenticationDatabase>, JsonSerializer<AuthenticationDatabase> {
 
 
-     
+
 
         public JsonElement serialize(final AuthenticationDatabase src, final Type typeOfSrc, final JsonSerializationContext context) {
             final Map<String, AuthenticationService> services = src.authById;
@@ -45,7 +45,7 @@ public class AuthenticationDatabase {
 			final TypeToken<Type> token = new TypeToken<Type>() {
             };
             final Map<String, AuthenticationService> services = new HashMap<String, AuthenticationService>();
-       
+
             final Map<String, Map<String, String>> credentials = context.deserialize(json, Object.class);
 
             for(final Entry<String, Map<String, String>> entry : credentials.entrySet()) {
@@ -55,7 +55,7 @@ public class AuthenticationDatabase {
             }
 
             return new AuthenticationDatabase(services);
-			
+
 		}
     }
 
