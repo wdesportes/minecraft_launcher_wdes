@@ -230,7 +230,7 @@ public class Downloadable {
             }
             if(target.isFile())
                 return "[" + status + "] Serveur innacessible,fichier local disponible,non vérifié";
-            throw new RuntimeException("Status du serveur : " + status);
+            throw new HttpStatusException(status);
         }
         catch(final IOException e) {
             if(target.isFile())

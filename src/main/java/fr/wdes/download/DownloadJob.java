@@ -110,27 +110,44 @@ public class DownloadJob {
 
     private void popAndDownload() {
         Downloadable downloadable;
-        while((downloadable = remainingFiles.poll()) != null)
+        while((downloadable = remainingFiles.poll()) != null) {
             if(downloadable.getNumAttempts() > 5) {
                 if(!ignoreFailures)
                     failures.add(downloadable);
                 logger.warn("Abandon : " + downloadable.getUrl() + " Tâche :'" + name + "'");
-
+                continue;
             }
-            else
-                try {
-                	if(downloadable.getNumAttempts()>0){this.name = this.name + "'... (essai " + downloadable.getNumAttempts() + ")";}
-                	logger.info("Téléchargement de :" + downloadable.getUrl() + " Tâche : '" + this.name );
-                	Launcher.getInstance().getLauncherPanel().getProgressBar().setString("Téléchargement de :" + downloadable.getName() + " =>'" + this.name );
-                    final String result = downloadable.download();
-                    successful.add(downloadable);
-
-                    logger.info("Téléchargé : " + downloadable.getUrl() + " Tâche : '" + name + "'" + ": " + result);
-                }
-                catch(final Throwable t) {
-                	logger.warn("Echec " + downloadable.getUrl() + " Tâche : '" + name + "'", t);
+            // Attempt label is computed LOCALLY - the previous code mutated
+            // this.name on every retry, so concurrent worker threads
+            // appended (essai 1)(essai 2)(essai 2)... endlessly to a shared
+            // field. The task name itself never changes once set.
+            final int attempt = downloadable.getNumAttempts();
+            final String jobLabel = attempt > 0 ? name + " (essai " + attempt + ")" : name;
+            try {
+                logger.info("Téléchargement de :" + downloadable.getUrl() + " Tâche : '" + jobLabel + "'");
+                Launcher.getInstance().getLauncherPanel().getProgressBar().setString("Téléchargement de :" + downloadable.getName() + " =>'" + jobLabel + "'");
+                final String result = downloadable.download();
+                successful.add(downloadable);
+                logger.info("Téléchargé : " + downloadable.getUrl() + " Tâche : '" + name + "': " + result);
+            }
+            catch(final HttpStatusException hs) {
+                if (hs.isPermanent()) {
+                    // 4xx - retrying won't change the answer. Mark the
+                    // downloadable as permanently failed and move on.
+                    logger.warn("Echec permanent [" + hs.status + "] " + downloadable.getUrl() + " Tâche : '" + name + "'");
+                    if (!ignoreFailures) {
+                        failures.add(downloadable);
+                    }
+                } else {
+                    logger.warn("Echec " + downloadable.getUrl() + " Tâche : '" + name + "'", hs);
                     remainingFiles.add(downloadable);
                 }
+            }
+            catch(final Throwable t) {
+                logger.warn("Echec " + downloadable.getUrl() + " Tâche : '" + name + "'", t);
+                remainingFiles.add(downloadable);
+            }
+        }
         if(remainingThreads.decrementAndGet() <= 0)
             listener.onDownloadJobFinished(this);
     }

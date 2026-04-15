@@ -19,6 +19,7 @@ import org.apache.commons.io.IOUtils;
 import fr.wdes.Launcher;
 import fr.wdes.logger;
 import fr.wdes.download.Downloadable;
+import fr.wdes.download.HttpStatusException;
 import fr.wdes.download.MonitoringInputStream;
 
 
@@ -98,7 +99,7 @@ public class BackgroundDownloadable
         FileUtils.deleteQuietly(localCompressed);
         throw new RuntimeException(String.format("Hash did not match downloaded compressed fond (Expected %s, downloaded %s)", new Object[] { this.asset.getCompressedHash(), hash }));
       }
-      throw new RuntimeException("Status du serveur : " + status);
+      throw new HttpStatusException(status);
     }
     Launcher.getInstance().getLauncherPanel().getProgressBar().setString("Téléchargement de : "+this.destination.getName());
     HttpURLConnection connection = makeConnection(remoteAsset.toString());
@@ -116,7 +117,7 @@ public class BackgroundDownloadable
       FileUtils.deleteQuietly(localAsset);
       throw new RuntimeException(String.format("Hash did not match downloaded fond (Expected %s, downloaded %s)", new Object[] { this.asset.getHash(), hash }));
     }
-    throw new RuntimeException("Status du serveur : " + status);
+    throw new HttpStatusException(status);
   }
 
   public String getStatus()
