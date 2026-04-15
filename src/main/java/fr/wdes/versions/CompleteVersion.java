@@ -36,6 +36,12 @@ public class CompleteVersion implements Version {
      * served by mirrors that predate the modern format.
      */
     protected AssetIndexInfo assetIndex;
+    /**
+     * Mojang piston-meta version JSON also ships a {@code downloads} block
+     * with the hash-addressed client/server jar URLs. Only {@code client.url}
+     * is consumed today; nullable on older mirror payloads.
+     */
+    protected DownloadsInfo downloads;
 
 
     public CompleteVersion() {
@@ -254,6 +260,28 @@ public class CompleteVersion implements Version {
 
 	public AssetIndexInfo getAssetIndex() {
 		return assetIndex;
+	}
+
+	public DownloadsInfo getDownloads() {
+		return downloads;
+	}
+
+	/**
+	 * Mojang's {@code downloads} block. Only the {@code client.url} is used
+	 * (to locate the version jar); server/windows_server artefacts aren't
+	 * currently downloaded by this launcher but are kept in the model so
+	 * round-tripping the JSON doesn't drop them.
+	 */
+	public static class DownloadsInfo {
+		public Download client;
+		public Download server;
+		public Download windows_server;
+	}
+
+	public static class Download {
+		public String sha1;
+		public long size;
+		public String url;
 	}
 
 	/**

@@ -5,11 +5,16 @@ import java.io.IOException;
 import java.net.Proxy;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import fr.wdes.Http;
 import fr.wdes.Launcher;
@@ -19,17 +24,30 @@ import fr.wdes.logger;
 import fr.wdes.versions.CompleteVersion;
 
 /**
- * Remote version list backed by Mojang's {@code piston-meta} endpoint.
+ * Remote version list backed by Mojang's {@code piston-meta} endpoint, with
+ * an optional overlay of the operator's own {@code versions/versions.json}
+ * so modded / custom versions served from {@link LauncherConstants#URL_DOWNLOAD_VERSIONS_BASE}
+ * show up alongside vanilla.
  *
- * <p>{@link #refreshVersions()} fetches {@link LauncherConstants#URL_MOJANG_VERSION_MANIFEST},
- * caches it under {@code <workingDir>/cache/version_manifest_v2.json}, and
- * remembers each version's per-version JSON URL so subsequent
- * {@link #getContent} calls for {@code versions/<id>/<id>.json} can fetch the
- * version metadata from Mojang's hash-addressed
- * {@code piston-meta.mojang.com/v1/packages/<sha>/<id>.json} URL and write the
- * response into the local versions tree where {@link LocalVersionList} picks
- * it up on subsequent runs - so once a version has been seen online it stays
- * usable even if the network or Mojang itself is unreachable.
+ * <p>{@link #refreshVersions()}:
+ * <ul>
+ *   <li>fetches {@link LauncherConstants#URL_MOJANG_VERSION_MANIFEST} and
+ *       caches it under {@code <workingDir>/cache/version_manifest_v2.json};</li>
+ *   <li>optionally fetches {@code <URL_DOWNLOAD_VERSIONS_BASE>/versions/versions.json}
+ *       (non-fatal - the launcher works with just Mojang);</li>
+ *   <li>merges the two lists, <em>operator entries take precedence on id
+ *       collision</em> so a custom "1.7.10" from the mirror shadows the
+ *       vanilla Mojang one;</li>
+ *   <li>remembers each Mojang version's per-version JSON URL so subsequent
+ *       {@link #getContent} calls for {@code versions/&lt;id&gt;/&lt;id&gt;.json}
+ *       hit the hash-addressed Mojang URL and write the response back to
+ *       the local versions tree (where {@link LocalVersionList} picks it
+ *       up next run - offline survival).</li>
+ * </ul>
+ *
+ * <p>Operator-only versions have no URL in the manifest and therefore fall
+ * through to the {@code URL_DOWNLOAD_VERSIONS_BASE + path} fetch in
+ * {@link #getContent}.
  */
 public class RemoteVersionList extends VersionList {
     private final Proxy proxy;
@@ -37,7 +55,7 @@ public class RemoteVersionList extends VersionList {
     /** Cached manifest body so {@link #getContent} can return it without refetching. */
     private String manifestBody;
 
-    /** id -> per-version JSON URL, populated from the manifest. */
+    /** id -> per-version JSON URL, populated from the Mojang manifest only. */
     private final Map<String, String> versionUrlById = new HashMap<String, String>();
 
     public RemoteVersionList(Proxy proxy) {
@@ -46,28 +64,51 @@ public class RemoteVersionList extends VersionList {
 
     @Override
     public void refreshVersions() throws IOException {
-        manifestBody = fetchManifestWithFallback();
-        cacheManifestQuietly(manifestBody);
-
+        // -- Mojang: mandatory source ----------------------------------
+        final String mojangBody = fetchManifestWithFallback();
+        cacheManifestQuietly(mojangBody);
+        MojangVersionManifest mojang = null;
         try {
-            final MojangVersionManifest manifest = new Gson().fromJson(manifestBody, MojangVersionManifest.class);
-            versionUrlById.clear();
-            if (manifest != null && manifest.versions != null) {
-                for (MojangVersionManifest.Entry entry : manifest.versions) {
-                    if (entry != null && entry.id != null && entry.url != null) {
-                        versionUrlById.put(entry.id, entry.url);
-                    }
-                }
-            }
+            mojang = new Gson().fromJson(mojangBody, MojangVersionManifest.class);
         } catch (RuntimeException re) {
-            // Don't blow up the refresh if the manifest is malformed - we'll
-            // fall back to whatever URLs the LocalVersionList knows about.
             logger.warn("Could not parse Mojang version manifest", re);
         }
 
+        // -- Operator mirror: optional overlay -------------------------
+        // Fetches <URL_DOWNLOAD_VERSIONS_BASE>/versions/versions.json to
+        // discover modded / custom entries. Silent on failure - absence is
+        // normal.
+        final OperatorVersionList operator = fetchOperatorVersionsQuietly();
+
+        // -- Merge into a single manifest body -------------------------
+        manifestBody = mergeIntoManifestBody(mojang, operator);
+
+        // -- URL map (Mojang only; operator entries served by the mirror)
+        versionUrlById.clear();
+        final Set<String> operatorIds = new HashSet<String>();
+        if (operator != null && operator.versions != null) {
+            for (OperatorEntry oe : operator.versions) {
+                if (oe != null && oe.id != null) {
+                    operatorIds.add(oe.id);
+                }
+            }
+        }
+        if (mojang != null && mojang.versions != null) {
+            for (MojangVersionManifest.Entry entry : mojang.versions) {
+                if (entry == null || entry.id == null || entry.url == null) {
+                    continue;
+                }
+                // Operator overrides Mojang for colliding ids.
+                if (operatorIds.contains(entry.id)) {
+                    continue;
+                }
+                versionUrlById.put(entry.id, entry.url);
+            }
+        }
+
         // Hand off to the base class, which will call getContent("versions/
-        // versions.json") and parse it into the existing PartialVersion list.
-        // The body it parses is the same Mojang manifest we already cached.
+        // versions.json") and parse our merged body into the existing
+        // PartialVersion list.
         super.refreshVersions();
     }
 
@@ -153,11 +194,95 @@ public class RemoteVersionList extends VersionList {
             return FileUtils.readFileToString(local);
         }
 
-        if (network != null) {
-            throw network;
+        // No URL in the manifest (operator-only id) and no cache - fetch
+        // from the configured operator mirror.
+        try {
+            final String body = Http.performGet(new URL(LauncherConstants.URL_DOWNLOAD_VERSIONS_BASE + path), proxy);
+            cacheVersionJsonQuietly(id, body);
+            return body;
+        } catch (IOException mirrorErr) {
+            if (network != null) {
+                throw network;
+            }
+            throw mirrorErr;
         }
-        // No URL in the manifest and no cache - one last try with the legacy mirror.
-        return Http.performGet(new URL(LauncherConstants.URL_DOWNLOAD_VERSIONS_BASE + path), proxy);
+    }
+
+    /** Silent best-effort fetch of the operator's versions.json. */
+    private OperatorVersionList fetchOperatorVersionsQuietly() {
+        try {
+            final String body = Http.performGet(new URL(LauncherConstants.URL_DOWNLOAD_VERSIONS_BASE + "versions/versions.json"), proxy);
+            return new Gson().fromJson(body, OperatorVersionList.class);
+        } catch (IOException e) {
+            logger.info("Operator versions.json unavailable, using Mojang only: " + e.getMessage());
+            return null;
+        } catch (RuntimeException re) {
+            logger.warn("Operator versions.json malformed", re);
+            return null;
+        }
+    }
+
+    /**
+     * Build a {@code version_manifest_v2.json}-shaped body combining both
+     * sources. Operator entries come first and take precedence on id
+     * collision; Mojang entries fill in the rest. Kept as raw JSON so the
+     * base class's {@code RawVersionList} parser sees a familiar shape.
+     */
+    static String mergeIntoManifestBody(final MojangVersionManifest mojang, final OperatorVersionList operator) {
+        final JsonObject root = new JsonObject();
+
+        // latest: prefer operator overrides.
+        final JsonObject latest = new JsonObject();
+        if (operator != null && operator.latest != null) {
+            for (Map.Entry<String, String> e : operator.latest.entrySet()) {
+                if (e.getValue() != null) {
+                    latest.addProperty(e.getKey(), e.getValue());
+                }
+            }
+        }
+        if (mojang != null && mojang.latest != null) {
+            for (Map.Entry<String, String> e : mojang.latest.entrySet()) {
+                if (!latest.has(e.getKey()) && e.getValue() != null) {
+                    latest.addProperty(e.getKey(), e.getValue());
+                }
+            }
+        }
+        root.add("latest", latest);
+
+        // versions: operator first (override), then Mojang.
+        final JsonArray versions = new JsonArray();
+        final Set<String> seen = new HashSet<String>();
+        if (operator != null && operator.versions != null) {
+            for (OperatorEntry oe : operator.versions) {
+                if (oe == null || oe.id == null) {
+                    continue;
+                }
+                versions.add(buildEntry(oe.id, oe.type, oe.time, oe.releaseTime, null));
+                seen.add(oe.id);
+            }
+        }
+        if (mojang != null && mojang.versions != null) {
+            for (MojangVersionManifest.Entry e : mojang.versions) {
+                if (e == null || e.id == null || seen.contains(e.id)) {
+                    continue;
+                }
+                versions.add(buildEntry(e.id, e.type, e.time, e.releaseTime, e.url));
+                seen.add(e.id);
+            }
+        }
+        root.add("versions", versions);
+
+        return root.toString();
+    }
+
+    private static JsonObject buildEntry(String id, String type, String time, String releaseTime, String url) {
+        final JsonObject o = new JsonObject();
+        o.addProperty("id", id);
+        if (type != null)        o.addProperty("type", type);
+        if (time != null)        o.addProperty("time", time);
+        if (releaseTime != null) o.addProperty("releaseTime", releaseTime);
+        if (url != null)         o.addProperty("url", url);
+        return o;
     }
 
     private File manifestCacheFile() {
@@ -202,5 +327,18 @@ public class RemoteVersionList extends VersionList {
         } catch (IOException e) {
             logger.warn("Couldn't cache version JSON for " + id + " to " + f, e);
         }
+    }
+
+    /** Legacy mirror shape: {@code {"latest": {...}, "versions": [{id,type,time,releaseTime}, ...]}}. */
+    static final class OperatorVersionList {
+        Map<String, String> latest;
+        List<OperatorEntry> versions;
+    }
+
+    static final class OperatorEntry {
+        String id;
+        String type;
+        String time;
+        String releaseTime;
     }
 }

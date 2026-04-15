@@ -78,7 +78,17 @@ public class VersionManager {
         job.addDownloadables(version.getRequiredDownloadables(OperatingSystem.getCurrentPlatform(), proxy, baseDirectory, false));
 
         final String jarFile = "versions/" + version.getId() + "/" + version.getId() + ".jar";
-        job.addDownloadables(new Downloadable[] { new Downloadable(proxy, new URL(LauncherConstants.URL_DOWNLOAD_VERSIONS_BASE + jarFile), new File(baseDirectory, jarFile), false) });
+        // Prefer Mojang's hash-addressed downloads.client.url when the
+        // per-version JSON ships it. Falls back to URL_DOWNLOAD_VERSIONS_BASE
+        // for operator-mirror / modded versions whose JSONs predate the
+        // modern downloads block.
+        final URL jarUrl;
+        if (version.getDownloads() != null && version.getDownloads().client != null && version.getDownloads().client.url != null && !version.getDownloads().client.url.isEmpty()) {
+            jarUrl = new URL(version.getDownloads().client.url);
+        } else {
+            jarUrl = new URL(LauncherConstants.URL_DOWNLOAD_VERSIONS_BASE + jarFile);
+        }
+        job.addDownloadables(new Downloadable[] { new Downloadable(proxy, jarUrl, new File(baseDirectory, jarFile), false) });
 
         return job;
     }
