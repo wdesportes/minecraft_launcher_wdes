@@ -25,7 +25,11 @@ I8,        8        ,8I         88                            88                
     public static final String LIBRARY_DOWNLOAD_BASE = "https://libraries.minecraft.net/";// {groupId}/{artifactId}/{version}/{artifactId}-{version}.jar
     public static final String URL_CONFIGS           = "http://wdeslaunchers.wdes.fr/configs/";
     public static final String URL_DOWNLOAD_VERSIONS_BASE     = "http://wdeslaunchers.wdes.fr/";// versions/{version}/{version}.jar or versions/versions.json
-    public static final String URL_DOWNLOAD_INDEXES_BASE      = "http://wdeslaunchers.wdes.fr/";// indexes/{indexName}.json
+    // URL_DOWNLOAD_INDEXES_BASE was removed: asset indexes are now
+    // hash-addressed and discovered via CompleteVersion.assetIndex.url
+    // out of the per-version JSON we get from piston-meta.mojang.com,
+    // with a local cache under <workingDir>/assets/indexes/<id>.json
+    // for offline reuse - so the separate constant had no caller.
     /**
      * Mojang's modern launcher meta endpoint. Returns the version manifest
      * (latest release/snapshot ids + array of {@code {id, type, url, time,

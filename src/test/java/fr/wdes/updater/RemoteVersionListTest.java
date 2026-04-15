@@ -36,6 +36,41 @@ public class RemoteVersionListTest {
     }
 
     @Test
+    public void completeVersionParsesAssetIndexBlock() {
+        // Trimmed real Mojang per-version JSON. The launcher only consumes
+        // assetIndex.url to fetch the asset index; the rest of the
+        // CompleteVersion fields (libraries, mainClass, ...) are validated
+        // elsewhere via the running launcher.
+        final String json = "{\n" +
+                "  \"id\": \"1.7.10\",\n" +
+                "  \"type\": \"release\",\n" +
+                "  \"mainClass\": \"net.minecraft.client.main.Main\",\n" +
+                "  \"minecraftArguments\": \"--username ${auth_player_name}\",\n" +
+                "  \"time\": \"2014-05-14T19:29:23+00:00\",\n" +
+                "  \"releaseTime\": \"2014-05-14T19:29:23+00:00\",\n" +
+                "  \"assets\": \"1.7.10\",\n" +
+                "  \"assetIndex\": {\n" +
+                "    \"id\": \"1.7.10\",\n" +
+                "    \"sha1\": \"abcdef1234567890\",\n" +
+                "    \"size\": 12345,\n" +
+                "    \"totalSize\": 67890,\n" +
+                "    \"url\": \"https://piston-meta.mojang.com/v1/packages/abcdef/1.7.10.json\"\n" +
+                "  }\n" +
+                "}";
+        final fr.wdes.versions.CompleteVersion v =
+            new com.google.gson.GsonBuilder()
+                .registerTypeAdapterFactory(new LowerCaseEnumTypeAdapterFactory())
+                .registerTypeAdapter(java.util.Date.class, new DateTypeAdapter())
+                .create()
+                .fromJson(json, fr.wdes.versions.CompleteVersion.class);
+        assertNotNull(v);
+        assertNotNull("assetIndex must hydrate from JSON", v.getAssetIndex());
+        assertEquals("1.7.10", v.getAssetIndex().id);
+        assertEquals("https://piston-meta.mojang.com/v1/packages/abcdef/1.7.10.json", v.getAssetIndex().url);
+        assertEquals(12345L, v.getAssetIndex().size);
+    }
+
+    @Test
     public void mojangManifest_parsesTrimmedFixture() {
         // Trimmed copy of the actual https://piston-meta.mojang.com response
         // shape: just enough to verify Gson populates id/url, which is all

@@ -142,14 +142,46 @@ public class VersionManager {
         indexName = "legacy";
       }
       logger.info("Processing index: " + indexName);
-      URL indexUrl = this.remoteVersionList.getIndex(indexName);
 
+      // Prefer Mojang's hash-addressed assetIndex.url from the per-version
+      // JSON when present; that's the source of truth in the modern format
+      // and removes the need for a separately configured indexes mirror.
+      // The "indexes folder under <workingDir>/assets" doubles as an
+      // offline cache so a successful run keeps later starts working.
       File indexFile = new File(indexesFolder, indexName + ".json");
+      URL indexUrl = null;
+      if (version.getAssetIndex() != null && version.getAssetIndex().url != null && !version.getAssetIndex().url.isEmpty()) {
+          try {
+              indexUrl = new URL(version.getAssetIndex().url);
+          } catch (java.net.MalformedURLException mue) {
+              logger.warn("Bad assetIndex.url on version " + version.getId() + ": " + version.getAssetIndex().url, mue);
+          }
+      }
       try
       {
-        inputStream = indexUrl.openConnection(proxy).getInputStream();
-        String json = IOUtils.toString(inputStream);
-        FileUtils.writeStringToFile(indexFile, json);
+        String json;
+        if (indexUrl != null) {
+            try {
+                inputStream = indexUrl.openConnection(proxy).getInputStream();
+                json = IOUtils.toString(inputStream);
+                FileUtils.writeStringToFile(indexFile, json);
+            } catch (IOException netErr) {
+                if (indexFile.isFile()) {
+                    logger.warn("Couldn't fetch asset index from " + indexUrl + ", using cached " + indexFile, netErr);
+                    json = FileUtils.readFileToString(indexFile);
+                } else {
+                    throw netErr;
+                }
+            }
+        } else if (indexFile.isFile()) {
+            // No URL in the version JSON and no cache - last resort: read
+            // whatever we cached previously. (Older locally-cached versions
+            // without an assetIndex block end up here.)
+            logger.info("No assetIndex.url for " + version.getId() + ", using cached " + indexFile);
+            json = FileUtils.readFileToString(indexFile);
+        } else {
+            throw new IOException("No assetIndex.url for " + version.getId() + " and no local cache at " + indexFile);
+        }
         AssetIndex index = (AssetIndex)this.gson.fromJson(json, AssetIndex.class);
         for (Map.Entry<AssetIndex.AssetObject, String> entry : index.getUniqueObjects().entrySet())
         {

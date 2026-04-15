@@ -29,6 +29,13 @@ public class CompleteVersion implements Version {
 	protected List<Rule> rules;
 	protected volatile boolean synced = false;
     protected String assets;
+    /**
+     * Mojang piston-meta version JSON ships an {@code assetIndex} block
+     * pointing at the hash-addressed asset-index JSON for this version.
+     * Populated by Gson when present; nullable on older version JSONs
+     * served by mirrors that predate the modern format.
+     */
+    protected AssetIndexInfo assetIndex;
 
 
     public CompleteVersion() {
@@ -243,5 +250,22 @@ public class CompleteVersion implements Version {
 
 	public String getAssets() {
 		return this.assets;
+	}
+
+	public AssetIndexInfo getAssetIndex() {
+		return assetIndex;
+	}
+
+	/**
+	 * Mojang's per-version {@code assetIndex} block. We only consume
+	 * {@code id} and {@code url} but the other fields are kept as Gson-
+	 * populated metadata (and so future code can verify integrity).
+	 */
+	public static class AssetIndexInfo {
+		public String id;
+		public String sha1;
+		public long size;
+		public long totalSize;
+		public String url;
 	}
 }

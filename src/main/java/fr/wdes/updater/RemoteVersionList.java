@@ -2,7 +2,6 @@ package fr.wdes.updater;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.util.HashMap;
@@ -43,14 +42,6 @@ public class RemoteVersionList extends VersionList {
 
     public RemoteVersionList(Proxy proxy) {
         this.proxy = proxy;
-    }
-
-    public URL getIndex(String indexName) throws MalformedURLException {
-        // NOTE: kept on the legacy index endpoint for now. Modern Mojang
-        // hash-addresses asset indexes via each version's assetIndex.url,
-        // which the CompleteVersion model in this codebase doesn't expose yet.
-        String url = LauncherConstants.URL_DOWNLOAD_INDEXES_BASE + "indexes/" + indexName + ".json";
-        return new URL(url);
     }
 
     @Override
