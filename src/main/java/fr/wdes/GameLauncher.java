@@ -447,6 +447,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                 }
             }
         }
+        detectKnownCrashes(tail);
         logger.info("===========================");
 
         if(exitCode == 0) {
@@ -670,6 +671,45 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                     }
 
          }
+        }
+    }
+
+    /**
+     * Pattern-match the tail of stdout for well-known crashes that the
+     * generic "[Minecraft tail] ..." dump doesn't make self-evident, and
+     * surface an actionable hint. Currently handles:
+     * <ul>
+     *   <li>pre-1.8 launchwrapper casting getClassLoader() to URLClassLoader
+     *       (blows up on Java 9+ because the AppClassLoader is no longer a
+     *       URLClassLoader) - tell the user to pin the profile to a Java 8
+     *       executable.</li>
+     * </ul>
+     * Callers that expect these hints in front of the user should also
+     * echo them to the progress bar; here we only log.
+     */
+    private void detectKnownCrashes(final String[] tail) {
+        if (tail == null || tail.length == 0) {
+            return;
+        }
+        boolean sawClassCast = false;
+        boolean sawLaunchWrapper = false;
+        for (int i = 0; i < tail.length; i++) {
+            final String line = tail[i];
+            if (line == null) continue;
+            if (line.contains("java.lang.ClassCastException") && line.contains("URLClassLoader")) {
+                sawClassCast = true;
+            }
+            if (line.contains("net.minecraft.launchwrapper.Launch")) {
+                sawLaunchWrapper = true;
+            }
+        }
+        if (sawClassCast && sawLaunchWrapper) {
+            final String hint =
+                "HINT: launchwrapper <=1.11 casts the system class loader to URLClassLoader, "
+                + "which only works on Java 8. Point this profile's \"Executable Java\" at a "
+                + "Java 8 install, or publish a patched launchwrapper in the mirror's version JSON.";
+            logger.warn(hint);
+            launcher.getLauncherPanel().progressBar.setText("[incompatibilité Java] utilise Java 8 pour cette version");
         }
     }
 
