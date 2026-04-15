@@ -122,6 +122,44 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <!-- Generates target/classes/git.properties at build time with
+             the working tree's current commit, branch and timestamp.
+             The generated file ships inside the jar and is read at
+             runtime by fr.wdes.BuildInfo so the launcher's boot
+             marker always reflects what's actually running - users
+             can't accidentally report bugs against a stale build
+             without us noticing. failOnNoGitDirectory=false keeps
+             tarball / IDE-without-git builds working (values just
+             fall back to "unknown"). -->
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+        <version>4.9.10</version>
+        <executions>
+          <execution>
+            <id>get-the-git-infos</id>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+          <includeOnlyProperties>
+            <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>
+            <includeOnlyProperty>^git.commit.id.full$</includeOnlyProperty>
+            <includeOnlyProperty>^git.commit.time$</includeOnlyProperty>
+            <includeOnlyProperty>^git.branch$</includeOnlyProperty>
+            <includeOnlyProperty>^git.build.time$</includeOnlyProperty>
+            <includeOnlyProperty>^git.dirty$</includeOnlyProperty>
+          </includeOnlyProperties>
+          <dateFormat>yyyy-MM-dd'T'HH:mm:ssXXX</dateFormat>
+        </configuration>
+      </plugin>
     </plugins>
     <resources>
       <!-- Root is src/main/java so the full path fr/wdes/ressources/
