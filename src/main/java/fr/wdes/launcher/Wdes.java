@@ -1,6 +1,5 @@
 package fr.wdes.launcher;
 
-import java.awt.Font;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
@@ -14,13 +13,6 @@ import java.util.Locale;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultCaret;
-import javax.swing.text.Document;
 
 import fr.wdes.Launcher;
 
@@ -33,7 +25,6 @@ import joptsimple.OptionSpec;
 @SuppressWarnings("serial")
 public class Wdes extends JFrame {
 
-	private static final Font MONOSPACED = new Font("Monospaced", 0, 12);
     public static double JAVA_VERSION = Double.parseDouble(System.getProperty("java.specification.version"));
     public static void main(final String[] args) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
@@ -106,87 +97,59 @@ public class Wdes extends JFrame {
         return string != null && !string.isEmpty();
     }
 
-    private final JTextArea textArea;
-
-
-    private final JScrollPane scrollPane;
-
-    private final StringBuilder outputBuffer = new StringBuilder();
+    private final SplashPanel splash;
 
     public Wdes(final Proxy proxy, final PasswordAuthentication proxyAuth, final String[] remainderArgs) {
         super("[WdesLaunchers] Lancement de votre launcher en cours...");
         this.setUndecorated(true);
 
 
-    	if (JAVA_VERSION <= 1.6) {
-    		JOptionPane.showMessageDialog(this,
-    			    "Version de java détéctée : "+JAVA_VERSION+", Version 1.7 minimum !!.\nMerci de mettre a jour java : java.com.",
-    			    "[WdesLaunchers] Impossible de lancer java",
-    			    JOptionPane.ERROR_MESSAGE);
-    		System.out.println("Version : "+JAVA_VERSION);
-    		System.exit(0);
-    	}
+        if (JAVA_VERSION <= 1.6) {
+            JOptionPane.showMessageDialog(this,
+                "Version de java détéctée : "+JAVA_VERSION+", Version 1.7 minimum !!.\nMerci de mettre a jour java : java.com.",
+                "[WdesLaunchers] Impossible de lancer java",
+                JOptionPane.ERROR_MESSAGE);
+            System.out.println("Version : "+JAVA_VERSION);
+            System.exit(0);
+        }
         setSize(854, 480);
         setDefaultCloseOperation(3);
 
-        textArea = new JTextArea();
-        textArea.setLineWrap(true);
-        textArea.setEditable(false);
-        textArea.setFont(MONOSPACED);
-        ((DefaultCaret) textArea.getCaret()).setUpdatePolicy(1);
-
-        scrollPane = new JScrollPane(textArea);
-        scrollPane.setBorder(null);
-        scrollPane.setVerticalScrollBarPolicy(22);
-
-        add(scrollPane);
+        // Replace the legacy white JTextArea boot screen with a glassy
+        // splash showing the bundled blurred background + a single
+        // rolling status line. Older log lines still go to stdout for
+        // debugging so nothing is actually lost.
+        splash = new SplashPanel(854, 480);
+        add(splash);
         setLocationRelativeTo(null);
         setVisible(true);
+
+        // Boot diagnostics: dumped to stdout (kept for debugging) but no
+        // longer painted into a scrolling text area on the splash. The
+        // splash shows a single rolling status line driven by the latest
+        // print() / println() call.
         println("WdesLauncher v(1.0)");
-        println(new StringBuilder().append("Current time is ").append(DateFormat.getDateTimeInstance(2, 2, Locale.FRANCE).format(new Date())).toString());
-        println(new StringBuilder().append("System.getProperty('os.name') == '").append(System.getProperty("os.name")).append("'").toString());
-        println(new StringBuilder().append("System.getProperty('os.version') == '").append(System.getProperty("os.version")).append("'").toString());
-        println(new StringBuilder().append("System.getProperty('os.arch') == '").append(System.getProperty("os.arch")).append("'").toString());
-        println(new StringBuilder().append("System.getProperty('java.version') == '").append(System.getProperty("java.version")).append("'").toString());
-        println(new StringBuilder().append("System.getProperty('java.vendor') == '").append(System.getProperty("java.vendor")).append("'").toString());
-        println(new StringBuilder().append("System.getProperty('sun.arch.data.model') == '").append(System.getProperty("sun.arch.data.model")).append("'").toString());
-        println("");
+        println("Current time is " + DateFormat.getDateTimeInstance(2, 2, Locale.FRANCE).format(new Date()));
+        println("os.name="     + System.getProperty("os.name"));
+        println("os.version="  + System.getProperty("os.version"));
+        println("os.arch="     + System.getProperty("os.arch"));
+        println("java.version=" + System.getProperty("java.version"));
+        println("java.vendor="  + System.getProperty("java.vendor"));
+        println("sun.arch.data.model=" + System.getProperty("sun.arch.data.model"));
 
-        new Launcher(this,"33a86c10-1e71-4e51-83b5-bdf218f29b97","wdeslaunchers", proxy, proxyAuth, remainderArgs);
-
-
+        splash.setStatus("Préparation du launcher...");
+        new Launcher(this, "33a86c10-1e71-4e51-83b5-bdf218f29b97", "wdeslaunchers", proxy, proxyAuth, remainderArgs);
     }
 
 
     public void print(final String string) {
         System.out.print(string);
-
-        outputBuffer.append(string);
-
-        final Document document = textArea.getDocument();
-        final JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
-
-        final boolean shouldScroll = scrollBar.getValue() + scrollBar.getSize().getHeight() + MONOSPACED.getSize() * 2 > scrollBar.getMaximum();
-        try {
-            document.insertString(document.getLength(), string, null);
+        if (splash != null) {
+            splash.setStatus(string);
         }
-        catch(final BadLocationException ignored) {
-        }
-        if(shouldScroll)
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    scrollBar.setValue(2147483647);
-                }
-            });
     }
 
     public void println(final String string) {
-        print(new StringBuilder().append(string).append("\n").toString());
+        print(string + "\n");
     }
-
-
-
-
-
-	}
-
+}

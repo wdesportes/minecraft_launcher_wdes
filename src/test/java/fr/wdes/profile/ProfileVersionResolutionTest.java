@@ -42,4 +42,22 @@ public class ProfileVersionResolutionTest {
         assertNull(Profile.resolveVersionId(null, null));
         assertNull(Profile.resolveVersionId("", ""));
     }
+
+    /**
+     * Regression: {@link Profile#setLastVersionId(String)} used to have its
+     * assignment commented out, so dropdown picks were silently dropped.
+     * Reach into the protected field (same package) so we don't depend on
+     * {@link Profile#getLastVersionId()} pulling on LauncherConstants.
+     */
+    @Test
+    public void setLastVersionIdActuallyAssigns() {
+        final Profile p = new Profile("test");
+        org.junit.Assert.assertNull(p.lastVersionId);
+
+        p.setLastVersionId("1.5.2");
+        org.junit.Assert.assertEquals("1.5.2", p.lastVersionId);
+
+        p.setLastVersionId(null);
+        org.junit.Assert.assertNull(p.lastVersionId);
+    }
 }

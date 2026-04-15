@@ -170,7 +170,10 @@ public class Profile {
     }
 
     public void setLastVersionId(final String lastVersionId) {
-       // this.lastVersionId = lastVersionId;
+        // The assignment used to be commented out, which silently turned
+        // every settings-dropdown change into a no-op - the user could
+        // pick another version, click Save, and the field never moved.
+        this.lastVersionId = lastVersionId;
     }
 
     public void setLauncherVisibilityOnGameClose(final LauncherVisibilityRule launcherVisibilityOnGameClose) {
