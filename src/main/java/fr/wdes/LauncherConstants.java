@@ -26,6 +26,14 @@ I8,        8        ,8I         88                            88                
     public static final String URL_CONFIGS           = "http://wdeslaunchers.wdes.fr/configs/";
     public static final String URL_DOWNLOAD_VERSIONS_BASE     = "http://wdeslaunchers.wdes.fr/";// versions/{version}/{version}.jar or versions/versions.json
     public static final String URL_DOWNLOAD_INDEXES_BASE      = "http://wdeslaunchers.wdes.fr/";// indexes/{indexName}.json
+    /**
+     * Mojang's modern launcher meta endpoint. Returns the version manifest
+     * (latest release/snapshot ids + array of {@code {id, type, url, time,
+     * releaseTime, sha1, complianceLevel}} entries). Each entry's {@code url}
+     * points at the per-version JSON, hash-addressed under
+     * {@code piston-meta.mojang.com/v1/packages/<sha>/<id>.json}.
+     */
+    public static final String URL_MOJANG_VERSION_MANIFEST    = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
     public static final String URL_ASSETS_DOWNLOAD_BASE       = "https://resources.download.minecraft.net/";// {hash[0:2]}/{hash}
     public static final String URL_LOGO_BASE         = "http://wdeslaunchers.wdes.fr/";// logos/{uuid}.png
     public static final String URL_FONDS_DOWNLOAD    = Launcher.getInstance().config.URL_FONDS_DOWNLOAD;

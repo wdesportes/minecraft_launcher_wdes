@@ -670,9 +670,9 @@ public class LauncherPanel extends JPanel implements ActionListener, RefreshedPr
         topWrapper = new JLayeredPane();
         CreateHome().setVisible(true);
         getTabPanel().getConsole().setVisible(true);
-      	topWrapper.add(close, new Integer(3));
-       	topWrapper.add(minimize, new Integer(3));
-      	topWrapper.add(options, new Integer(3));
+      	topWrapper.add(close, Integer.valueOf(3));
+       	topWrapper.add(minimize, Integer.valueOf(3));
+      	topWrapper.add(options, Integer.valueOf(3));
         topWrapper.setLayout(new BorderLayout());
         topWrapper.add(CreateHome(), "Center");
 
