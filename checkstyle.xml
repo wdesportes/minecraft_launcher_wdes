@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+  Intentionally minimal "house style" linter for this codebase. The
+  existing source mixes tabs and spaces with no consistent indent, so the
+  formatter rules are deliberately silent on that front - the goal is to
+  catch the things that are universally wrong (unused imports, trailing
+  whitespace, missing final newline, star imports, the deprecated
+  `new Integer(int)` family, etc.) without forcing a project-wide
+  reformat.
+
+  Run with:
+      mvn checkstyle:check
+-->
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="warning"/>
+    <property name="fileExtensions" value="java,properties,xml"/>
+
+    <!-- Every file ends with exactly one newline. -->
+    <module name="NewlineAtEndOfFile">
+        <property name="lineSeparator" value="lf"/>
+    </module>
+
+    <!-- No trailing whitespace anywhere. -->
+    <module name="RegexpSingleline">
+        <property name="format" value="\s+$"/>
+        <property name="message" value="Line has trailing whitespace."/>
+    </module>
+
+    <!-- Discourage CRLF line endings sneaking in via Windows editors. -->
+    <module name="RegexpMultiline">
+        <property name="format" value="\r\n"/>
+        <property name="fileExtensions" value="java"/>
+        <property name="message" value="CRLF line ending - use LF."/>
+    </module>
+
+    <module name="TreeWalker">
+        <!-- Imports -->
+        <module name="UnusedImports">
+            <property name="processJavadoc" value="true"/>
+        </module>
+        <module name="RedundantImport"/>
+        <module name="AvoidStarImport"/>
+
+        <!-- Catch the deprecated boxed-primitive constructors that the
+             Java 9+ compiler now warns and Java 16+ marks for removal. -->
+        <module name="IllegalInstantiation">
+            <property name="classes" value="java.lang.Integer,java.lang.Long,java.lang.Boolean,java.lang.Byte,java.lang.Character,java.lang.Short,java.lang.Float,java.lang.Double"/>
+        </module>
+
+        <!-- Generously long but at least catches accidentally-pasted
+             one-liners that ought to wrap. -->
+        <module name="LineLength">
+            <property name="max" value="300"/>
+        </module>
+
+        <!-- Discourage System.out / System.err sneaking in as ad-hoc
+             logging - the codebase has fr.wdes.logger for that. -->
+        <module name="RegexpSinglelineJava">
+            <property name="format" value="System\.(out|err)\.println"/>
+            <property name="message" value="Use fr.wdes.logger instead of System.out/System.err.println."/>
+            <property name="ignoreComments" value="true"/>
+        </module>
+    </module>
+</module>

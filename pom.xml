@@ -81,6 +81,32 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <!-- Minimal house-style linter. Run explicitly via
+             `mvn checkstyle:check` or it'll also fire on `mvn verify`.
+             Severity is "warning" in the config so the build doesn't
+             explode on legacy formatting; CI can flip failOnViolation
+             to true later if desired. -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.3.1</version>
+        <configuration>
+          <configLocation>${project.basedir}/checkstyle.xml</configLocation>
+          <encoding>UTF-8</encoding>
+          <consoleOutput>true</consoleOutput>
+          <failOnViolation>false</failOnViolation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>verify-style</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
     <resources>
       <!-- Root is src/main/java so the full path fr/wdes/ressources/
