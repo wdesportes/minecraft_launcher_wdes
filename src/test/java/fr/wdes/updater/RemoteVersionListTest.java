@@ -228,6 +228,131 @@ public class RemoteVersionListTest {
                 root.getAsJsonArray("versions").get(0).getAsJsonObject().get("id").getAsString());
     }
 
+    /**
+     * The operator's actual live {@code versions/versions.json} (pinning
+     * 1.7.10 as both latest release and latest snapshot). Verifies the
+     * launcher:
+     * <ul>
+     *   <li>deserialises the raw shape into {@code OperatorVersionList}
+     *       without losing any field;</li>
+     *   <li>emits an entry in the merged manifest that has id/type/time/
+     *       releaseTime but NO {@code url}, so the per-version JSON lookup
+     *       falls through to URL_DOWNLOAD_VERSIONS_BASE instead of Mojang's
+     *       piston-meta URL (which would serve a different content).</li>
+     * </ul>
+     */
+    @Test
+    public void mergeIntoManifestBody_acceptsRealOperatorJson() {
+        final String operatorJson = "{\n" +
+                "  \"latest\": {\n" +
+                "    \"snapshot\": \"1.7.10\",\n" +
+                "    \"release\": \"1.7.10\"\n" +
+                "  },\n" +
+                "  \"versions\": [\n" +
+                "    {\n" +
+                "      \"id\": \"1.7.10\",\n" +
+                "      \"time\": \"2014-05-14T19:29:23+02:00\",\n" +
+                "      \"releaseTime\": \"2014-05-14T19:29:23+02:00\",\n" +
+                "      \"type\": \"release\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+
+        final RemoteVersionList.OperatorVersionList operator =
+                new Gson().fromJson(operatorJson, RemoteVersionList.OperatorVersionList.class);
+        assertNotNull(operator);
+        assertNotNull(operator.versions);
+        assertEquals(1, operator.versions.size());
+        assertEquals("1.7.10", operator.versions.get(0).id);
+        assertEquals("release", operator.versions.get(0).type);
+        assertEquals("1.7.10", operator.latest.get("release"));
+        assertEquals("1.7.10", operator.latest.get("snapshot"));
+
+        // Merge against a small Mojang fixture that also ships 1.7.10 plus a
+        // more recent id so we can check the operator entry shadows Mojang's
+        // vanilla 1.7.10 url.
+        final MojangVersionManifest mojang = new MojangVersionManifest();
+        mojang.latest = new HashMap<String, String>();
+        mojang.latest.put("release", "1.20.4");
+        mojang.latest.put("snapshot", "24w13a");
+        mojang.versions = new java.util.ArrayList<MojangVersionManifest.Entry>();
+        final MojangVersionManifest.Entry vanilla = new MojangVersionManifest.Entry();
+        vanilla.id = "1.7.10";
+        vanilla.type = "release";
+        vanilla.url = "https://piston-meta.mojang.com/v1/packages/def/1.7.10.json";
+        mojang.versions.add(vanilla);
+        final MojangVersionManifest.Entry modern = new MojangVersionManifest.Entry();
+        modern.id = "1.20.4";
+        modern.type = "release";
+        modern.url = "https://piston-meta.mojang.com/v1/packages/abc/1.20.4.json";
+        mojang.versions.add(modern);
+
+        final JsonObject root = new JsonParser()
+                .parse(RemoteVersionList.mergeIntoManifestBody(mojang, operator))
+                .getAsJsonObject();
+
+        // Operator's "latest" pin wins on both keys.
+        final JsonObject latest = root.getAsJsonObject("latest");
+        assertEquals("1.7.10", latest.get("release").getAsString());
+        assertEquals("1.7.10", latest.get("snapshot").getAsString());
+
+        // Versions: exactly two ids - operator's 1.7.10 (no url) and
+        // Mojang's 1.20.4 (with url). Operator comes first.
+        final JsonArray versions = root.getAsJsonArray("versions");
+        assertEquals(2, versions.size());
+        final JsonObject first  = versions.get(0).getAsJsonObject();
+        final JsonObject second = versions.get(1).getAsJsonObject();
+        assertEquals("1.7.10", first.get("id").getAsString());
+        assertFalse("operator 1.7.10 must shadow Mojang's url", first.has("url"));
+        assertEquals("2014-05-14T19:29:23+02:00", first.get("time").getAsString());
+        assertEquals("2014-05-14T19:29:23+02:00", first.get("releaseTime").getAsString());
+        assertEquals("1.20.4", second.get("id").getAsString());
+        assertEquals("https://piston-meta.mojang.com/v1/packages/abc/1.20.4.json",
+                second.get("url").getAsString());
+    }
+
+    /**
+     * Explicit per-key precedence test for the {@code latest} map.
+     * Operator values shadow Mojang values for the keys they define;
+     * missing operator keys let Mojang's value through. Prevents a
+     * silent regression if a future refactor serialises the latest
+     * pairs in the wrong order.
+     */
+    @Test
+    public void mergeIntoManifestBody_operatorLatestOverridesMojangPerKey() {
+        final MojangVersionManifest mojang = new MojangVersionManifest();
+        mojang.latest = new HashMap<String, String>();
+        mojang.latest.put("release", "1.21.4");
+        mojang.latest.put("snapshot", "24w40a");
+        mojang.versions = new java.util.ArrayList<MojangVersionManifest.Entry>();
+        final MojangVersionManifest.Entry modern = new MojangVersionManifest.Entry();
+        modern.id = "1.21.4";
+        modern.type = "release";
+        modern.url = "https://piston-meta.mojang.com/v1/packages/abc/1.21.4.json";
+        mojang.versions.add(modern);
+
+        // Operator overrides only "release" (keeps the dropdown pinned to
+        // their supported server version) and leaves snapshot alone.
+        final RemoteVersionList.OperatorVersionList operator = new RemoteVersionList.OperatorVersionList();
+        operator.latest = new HashMap<String, String>();
+        operator.latest.put("release", "1.7.10");
+        operator.versions = new java.util.ArrayList<RemoteVersionList.OperatorEntry>();
+        final RemoteVersionList.OperatorEntry custom = new RemoteVersionList.OperatorEntry();
+        custom.id = "1.7.10";
+        custom.type = "release";
+        operator.versions.add(custom);
+
+        final JsonObject latest = new JsonParser()
+                .parse(RemoteVersionList.mergeIntoManifestBody(mojang, operator))
+                .getAsJsonObject()
+                .getAsJsonObject("latest");
+
+        // Operator supplied "release" -> operator wins.
+        assertEquals("1.7.10", latest.get("release").getAsString());
+        // Operator didn't supply "snapshot" -> Mojang's value comes through.
+        assertEquals("24w40a", latest.get("snapshot").getAsString());
+    }
+
     @Test
     public void mergeIntoManifestBody_mojangAlone() {
         final MojangVersionManifest mojang = new MojangVersionManifest();

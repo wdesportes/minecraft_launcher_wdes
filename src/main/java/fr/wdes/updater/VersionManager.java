@@ -169,28 +169,39 @@ public class VersionManager {
       }
       try
       {
-        String json;
+        String json = null;
         if (indexUrl != null) {
             try {
                 inputStream = indexUrl.openConnection(proxy).getInputStream();
                 json = IOUtils.toString(inputStream);
                 FileUtils.writeStringToFile(indexFile, json);
             } catch (IOException netErr) {
+                logger.warn("Couldn't fetch asset index from " + indexUrl, netErr);
+            }
+        }
+        if (json == null) {
+            // Operator-mirror fallback for version JSONs without a modern
+            // assetIndex block (e.g. the modded / custom 1.7.10 served from
+            // URL_DOWNLOAD_VERSIONS_BASE). Keeps the old legacy layout
+            // working without reintroducing URL_DOWNLOAD_INDEXES_BASE: the
+            // mirror hosts both on the same base, just under indexes/.
+            final String mirrorPath = "indexes/" + indexName + ".json";
+            final URL mirrorUrl = new URL(LauncherConstants.URL_DOWNLOAD_VERSIONS_BASE + mirrorPath);
+            try {
+                inputStream = mirrorUrl.openConnection(proxy).getInputStream();
+                json = IOUtils.toString(inputStream);
+                FileUtils.writeStringToFile(indexFile, json);
+                logger.info("Fetched asset index from operator mirror " + mirrorUrl);
+            } catch (IOException mirrorErr) {
                 if (indexFile.isFile()) {
-                    logger.warn("Couldn't fetch asset index from " + indexUrl + ", using cached " + indexFile, netErr);
+                    logger.warn("Couldn't reach operator mirror " + mirrorUrl + ", using cached " + indexFile, mirrorErr);
                     json = FileUtils.readFileToString(indexFile);
                 } else {
-                    throw netErr;
+                    throw new IOException("No assetIndex.url for " + version.getId()
+                            + ", operator mirror unreachable at " + mirrorUrl
+                            + " and no local cache at " + indexFile, mirrorErr);
                 }
             }
-        } else if (indexFile.isFile()) {
-            // No URL in the version JSON and no cache - last resort: read
-            // whatever we cached previously. (Older locally-cached versions
-            // without an assetIndex block end up here.)
-            logger.info("No assetIndex.url for " + version.getId() + ", using cached " + indexFile);
-            json = FileUtils.readFileToString(indexFile);
-        } else {
-            throw new IOException("No assetIndex.url for " + version.getId() + " and no local cache at " + indexFile);
         }
         AssetIndex index = (AssetIndex)this.gson.fromJson(json, AssetIndex.class);
         for (Map.Entry<AssetIndex.AssetObject, String> entry : index.getUniqueObjects().entrySet())
