@@ -58,7 +58,11 @@ public class Library {
     public String getArtifactBaseDir() {
         if(name == null)
             throw new IllegalStateException("Cannot get artifact dir of empty/blank artifact");
-        final String[] parts = name.split(":", 3);
+        // Full unbounded split: Mojang 1.13+ libraries carry the classifier
+        // baked into the name ("org.lwjgl:lwjgl:3.3.1:natives-linux"), and
+        // the older ":", 3 split would glue "3.3.1:natives-linux" into one
+        // version slot and produce paths libraries.minecraft.net 404s on.
+        final String[] parts = name.split(":");
         return String.format("%s/%s/%s", new Object[] { parts[0].replaceAll("\\.", "/"), parts[1], parts[2] });
     }
 
@@ -66,8 +70,21 @@ public class Library {
         if(name == null)
             throw new IllegalStateException("Cannot get artifact filename of empty/blank artifact");
 
-        final String[] parts = name.split(":", 3);
-        final String result = String.format("%s-%s%s.jar", new Object[] { parts[1], parts[2], classifier != null ? "-" + classifier : "" });
+        final String[] parts = name.split(":");
+        // Classifier priority:
+        //   1. explicit argument (legacy natives-map layout: the
+        //      natives.linux value IS the classifier);
+        //   2. parts[3] if the name itself is four-part
+        //      (modern Mojang layout for native artefacts);
+        //   3. no classifier.
+        String effectiveClassifier = classifier;
+        if ((effectiveClassifier == null || effectiveClassifier.isEmpty()) && parts.length > 3) {
+            effectiveClassifier = parts[3];
+        }
+        final String suffix = effectiveClassifier != null && !effectiveClassifier.isEmpty()
+                ? "-" + effectiveClassifier
+                : "";
+        final String result = String.format("%s-%s%s.jar", new Object[] { parts[1], parts[2], suffix });
 
         return SUBSTITUTOR.replace(result);
     }

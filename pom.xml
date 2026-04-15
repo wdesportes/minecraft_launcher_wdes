@@ -131,10 +131,13 @@
              can't accidentally report bugs against a stale build
              without us noticing. failOnNoGitDirectory=false keeps
              tarball / IDE-without-git builds working (values just
-             fall back to "unknown"). -->
-        <groupId>io.github.git-commit-id</groupId>
-        <artifactId>git-commit-id-maven-plugin</artifactId>
-        <version>4.9.10</version>
+             fall back to "unknown"). Using the pl.project13.maven
+             coordinate (4.0.5, Java 8 compatible) rather than the
+             newer io.github.git-commit-id fork because some mirrors
+             are still missing the fork's POM files. -->
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>4.0.5</version>
         <executions>
           <execution>
             <id>get-the-git-infos</id>
