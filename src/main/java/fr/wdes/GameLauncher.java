@@ -628,7 +628,10 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                     return;
                 }
             try {
-                DownloadJob job = new DownloadJob(" Version & Libraries "+launcher.config.version, false, this);
+                // Use the version we actually resolved from the profile, not
+                // the operator's config default - otherwise picking 1.5.2 in
+                // the dropdown still labels the job as the config version.
+                DownloadJob job = new DownloadJob(" Version & Libraries " + version.getId(), false, this);
                 addJob(job);
                 launcher.getVersionManager().downloadVersion(syncInfo, job);
 

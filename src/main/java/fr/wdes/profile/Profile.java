@@ -99,13 +99,24 @@ public class Profile {
     }
 
     public String getLastVersionId() {
-    	//lastVersionId
-    	if(LauncherConstants.VERSION_MINECRAFT.equals("auto-mc")){
-    		return lastVersionId;
+    	return resolveVersionId(lastVersionId, LauncherConstants.VERSION_MINECRAFT);
+    }
+
+    /**
+     * Decide which version id to launch. The user's explicit pick on the
+     * profile always wins; if they haven't picked one, the operator can pin
+     * a version through the web config's {@code version} field. The magic
+     * value {@code "auto-mc"} (or null / empty) means "no operator pin -
+     * let the launcher pick the latest" and is the default for new configs.
+     */
+    public static String resolveVersionId(final String profileVersion, final String operatorPin) {
+    	if (profileVersion != null && profileVersion.length() > 0) {
+    		return profileVersion;
     	}
-    	else{
-        return LauncherConstants.VERSION_MINECRAFT;
+    	if (operatorPin != null && operatorPin.length() > 0 && !operatorPin.equals("auto-mc")) {
+    		return operatorPin;
     	}
+    	return null;
     }
 
     public LauncherVisibilityRule getLauncherVisibilityOnGameClose() {
