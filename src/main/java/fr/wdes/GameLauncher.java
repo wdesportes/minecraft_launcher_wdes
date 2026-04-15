@@ -704,12 +704,34 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
             }
         }
         if (sawClassCast && sawLaunchWrapper) {
+            // English copy for the log (greppable in bug reports) and a
+            // French user-facing message on the progress bar + a modal
+            // so the fix doesn't get missed in scrollback.
             final String hint =
                 "HINT: launchwrapper <=1.11 casts the system class loader to URLClassLoader, "
                 + "which only works on Java 8. Point this profile's \"Executable Java\" at a "
                 + "Java 8 install, or publish a patched launchwrapper in the mirror's version JSON.";
             logger.warn(hint);
-            launcher.getLauncherPanel().progressBar.setText("[incompatibilité Java] utilise Java 8 pour cette version");
+
+            final String frenchShort = "Cette version nécessite Java 8 (voir Paramètres du profil)";
+            final String frenchLong =
+                "Cette version de Minecraft utilise launchwrapper 1.5, qui ne fonctionne plus "
+                + "sur Java 9 ou supérieur.\n\n"
+                + "Pour jouer à cette version, installez Java 8 puis indiquez son chemin dans "
+                + "le profil :\n"
+                + "    Paramètres du profil \u2192 Paramètres Java (Avancé) \u2192 Executable Java\n\n"
+                + "Exemple (Linux) :  /usr/lib/jvm/java-8-openjdk/bin/java";
+
+            launcher.getLauncherPanel().progressBar.setText(frenchShort);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JOptionPane.showMessageDialog(
+                        launcher.getFrame(),
+                        frenchLong,
+                        "Version de Java incompatible",
+                        JOptionPane.WARNING_MESSAGE);
+                }
+            });
         }
     }
 
