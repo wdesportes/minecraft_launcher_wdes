@@ -35,34 +35,43 @@ public class LiteProgressBar extends JProgressBar implements Transparent {
 		transparency.cleanup(g2d);
 		g2d = (Graphics2D) g;
 
-		if (this.isStringPainted() && getString().length() > 0) {
+		// Snapshot getString() once - download threads call setString()
+		// concurrently, so evaluating it more than once in a single paint
+		// can return a shorter string the second time and trip
+		// StringIndexOutOfBoundsException in the substring() below.
+		final String text = getString();
+		if (this.isStringPainted() && text != null && text.length() > 0) {
 			// Without these hints the bitmap font renders aliased and looks
 			// horrible compared to the rest of the UI.
 			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 			g2d.setFont(getFont());
 
-			final int startWidth = (getWidth() - g2d.getFontMetrics().stringWidth(getString())) / 2;
+			final int startWidth = (getWidth() - g2d.getFontMetrics().stringWidth(text)) / 2;
 			String white = "";
 			int whiteWidth = 0;
 			int chars = 0;
-			for (int i = 0; i < getString().length(); i++) {
-				white += getString().charAt(i);
+			for (int i = 0; i < text.length(); i++) {
+				white += text.charAt(i);
 				whiteWidth = g2d.getFontMetrics().stringWidth(white);
 				if (startWidth + whiteWidth > x) {
 					break;
 				}
 				chars++;
 			}
-			if (chars != getString().length()) {
+			if (chars != text.length()) {
 				white = white.substring(0, white.length() - 1);
 				whiteWidth = g2d.getFontMetrics().stringWidth(white);
 			}
+			// Guard against the unlikely case where chars somehow ran past
+			// the snapshot length (shouldn't happen with the loop above
+			// checking i < text.length(), but cheap insurance).
+			final int safeChars = Math.min(chars, text.length());
 			float height = getFont().getSize();
 			g2d.setColor(Color.WHITE);
 			g2d.drawString(white, startWidth, height * 1.5F);
 			g2d.setColor(Color.BLACK);
-			g2d.drawString(this.getString().substring(chars), whiteWidth + startWidth, height * 1.5F);
+			g2d.drawString(text.substring(safeChars), whiteWidth + startWidth, height * 1.5F);
 		}
 
 		transparency.cleanup(g2d);
