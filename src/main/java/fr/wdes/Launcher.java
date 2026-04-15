@@ -239,6 +239,11 @@ public class Launcher {
         /** *SQLITE DB*  */
 
         logger.info("Launcher WdesLauncher v (1.0) started on " + OperatingSystem.getCurrentPlatform().getName() + "...");
+        // Build marker: bump this string whenever a change to the launch
+        // pipeline lands that can't be detected from user-facing output,
+        // so a user reporting "it still does X" can paste this line and
+        // prove which build they're actually running.
+        logger.info("[build] supports legacy + 1.13+ arguments.game, Mojang piston-meta manifest, HttpStatusException retries");
         logger.info("Current time is " + DateFormat.getDateTimeInstance(2, 2, Locale.FRANCE).format(new Date()));
         if(!OperatingSystem.getCurrentPlatform().isSupported())
         logger.info("Ce système d'exploitation est inconnu,il n'est peut être pas supporté.");
