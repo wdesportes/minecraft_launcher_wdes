@@ -677,15 +677,20 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
     /**
      * Pattern-match the tail of stdout for well-known crashes that the
      * generic "[Minecraft tail] ..." dump doesn't make self-evident, and
-     * surface an actionable hint. Currently handles:
+     * surface an actionable hint both in the log (English, grep-friendly)
+     * and via a French message on the progress bar plus a modal dialog.
+     * Currently handles:
      * <ul>
      *   <li>pre-1.8 launchwrapper casting getClassLoader() to URLClassLoader
      *       (blows up on Java 9+ because the AppClassLoader is no longer a
      *       URLClassLoader) - tell the user to pin the profile to a Java 8
      *       executable.</li>
+     *   <li>Debian / Ubuntu Java 8 shipping an accessibility.properties
+     *       that references the GNOME ATK wrapper, which isn't installed
+     *       by default - any AWT init then throws
+     *       {@code AWTError: Assistive Technology not found:
+     *       org.GNOME.Accessibility.AtkWrapper}.</li>
      * </ul>
-     * Callers that expect these hints in front of the user should also
-     * echo them to the progress bar; here we only log.
      */
     private void detectKnownCrashes(final String[] tail) {
         if (tail == null || tail.length == 0) {
@@ -693,6 +698,7 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
         }
         boolean sawClassCast = false;
         boolean sawLaunchWrapper = false;
+        boolean sawAtkMissing = false;
         for (int i = 0; i < tail.length; i++) {
             final String line = tail[i];
             if (line == null) continue;
@@ -702,11 +708,11 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
             if (line.contains("net.minecraft.launchwrapper.Launch")) {
                 sawLaunchWrapper = true;
             }
+            if (line.contains("Assistive Technology not found") || line.contains("org.GNOME.Accessibility.AtkWrapper")) {
+                sawAtkMissing = true;
+            }
         }
         if (sawClassCast && sawLaunchWrapper) {
-            // English copy for the log (greppable in bug reports) and a
-            // French user-facing message on the progress bar + a modal
-            // so the fix doesn't get missed in scrollback.
             final String hint =
                 "HINT: launchwrapper <=1.11 casts the system class loader to URLClassLoader, "
                 + "which only works on Java 8. Point this profile's \"Executable Java\" at a "
@@ -722,17 +728,49 @@ public class GameLauncher implements JavaProcessRunnable, DownloadListener {
                 + "    Paramètres du profil \u2192 Paramètres Java (Avancé) \u2192 Executable Java\n\n"
                 + "Exemple (Linux) :  /usr/lib/jvm/java-8-openjdk/bin/java";
 
-            launcher.getLauncherPanel().progressBar.setText(frenchShort);
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    JOptionPane.showMessageDialog(
-                        launcher.getFrame(),
-                        frenchLong,
-                        "Version de Java incompatible",
-                        JOptionPane.WARNING_MESSAGE);
-                }
-            });
+            showCrashHint(frenchShort, frenchLong, "Version de Java incompatible");
+            return;
         }
+        if (sawAtkMissing) {
+            final String hint =
+                "HINT: Debian/Ubuntu's openjdk-8 ships accessibility.properties referencing "
+                + "org.GNOME.Accessibility.AtkWrapper but doesn't install the wrapper by "
+                + "default. Either install libatk-wrapper-java / libatk-wrapper-java-jni, or "
+                + "add -Djavax.accessibility.assistive_technologies= to the profile's JVM "
+                + "arguments to skip AT loading, or comment the assistive_technologies line "
+                + "in /etc/java-8-openjdk/accessibility.properties.";
+            logger.warn(hint);
+
+            final String frenchShort = "Accessibilité Java manquante - voir dialogue";
+            final String frenchLong =
+                "Java ne trouve pas la passerelle d'accessibilité GNOME (AtkWrapper) - c'est "
+                + "un bug bien connu du paquet openjdk-8 sur Debian / Ubuntu.\n\n"
+                + "Trois solutions, de la plus simple à la plus invasive :\n\n"
+                + "1. Ajouter cette option JVM dans votre profil pour désactiver le chargement "
+                + "des technologies d'assistance :\n"
+                + "    Paramètres du profil \u2192 Paramètres Java (Avancé) \u2192 Arguments JVM\n"
+                + "    \u2192 ajoutez :   -Djavax.accessibility.assistive_technologies=\n\n"
+                + "2. Installer le paquet manquant :\n"
+                + "    sudo apt install libatk-wrapper-java libatk-wrapper-java-jni\n\n"
+                + "3. Commenter la ligne fautive dans la config Java :\n"
+                + "    sudo sed -i '/^assistive_technologies=/s/^/#/' /etc/java-8-openjdk/accessibility.properties";
+
+            showCrashHint(frenchShort, frenchLong, "Accessibilité Java introuvable");
+        }
+    }
+
+    /** Show a French hint both on the progress bar (short) and as a modal (long). */
+    private void showCrashHint(final String progressBarText, final String dialogBody, final String dialogTitle) {
+        launcher.getLauncherPanel().progressBar.setText(progressBarText);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                JOptionPane.showMessageDialog(
+                    launcher.getFrame(),
+                    dialogBody,
+                    dialogTitle,
+                    JOptionPane.WARNING_MESSAGE);
+            }
+        });
     }
 
     private void setWorking(final boolean working) {
