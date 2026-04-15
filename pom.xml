@@ -5,42 +5,57 @@
   <version>2.0.0</version>
 
 <dependencies>
-	<dependency>
-		<groupId>org.xerial</groupId>
-		<artifactId>sqlite-jdbc</artifactId>
-		<version>3.8.10.2</version>
-	</dependency>
+    <!-- SQLite driver. 3.8.x is from 2015 and ships outdated native blobs;
+         3.45.x is the latest stable and still supports Java 8. -->
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+      <version>3.45.3.0</version>
+    </dependency>
 
+    <!-- Apache Commons IO. 2.1 is from 2011; 2.11.0 is the last release
+         that comfortably targets Java 8 (later versions baseline higher). -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.1</version>
+      <version>2.11.0</version>
     </dependency>
 
+    <!-- Apache Commons Lang 3. 3.0 is from 2011; 3.12.0 is the last
+         release that still supports Java 8 (3.13+ requires Java 17). -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.0</version>
+      <version>3.12.0</version>
     </dependency>
 
+    <!-- jopt-simple 4.5 (CLI parser used by Wdes.main). 5.x renamed the
+         OptionParser builder methods, so a bump would require code
+         changes - leaving on 4.5 for now. -->
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>
       <artifactId>jopt-simple</artifactId>
       <version>4.5</version>
     </dependency>
 
+    <!-- Gson. 2.2.4 is from 2013, 2.10.1 is the current stable - fully
+         backward compatible for everything this codebase uses. -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.2.4</version>
+      <version>2.10.1</version>
     </dependency>
 
-	<dependency>
-	<groupId>commons-codec</groupId>
-	<artifactId>commons-codec</artifactId>
-	<version>1.10</version>
-	</dependency>
+    <!-- Apache Commons Codec. 1.10 -> 1.15 is a no-API-change bump. -->
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.15</version>
+    </dependency>
 
+    <!-- Guava 14.0 (2013). Modern Guava (33.x) drops a lot of methods
+         and the LegacyHashCode helpers this code relies on; staying on
+         14.0 unless someone has time for a thorough audit. -->
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
